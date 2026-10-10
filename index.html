@@ -942,7 +942,10 @@ async function ensureArchive(p, from, onWait, onProgress) {
       try {
         const j = await fetchSpan(p.lat, p.lon, job.s, job.e, onWait);
         const cols = toCols(j);
-        rec.yrs[job.y] = { e: job.e, c: job.append ? mergeCols(rec.yrs[job.y].c, cols) : cols };
+        // Keep only days the archive actually filled; trailing empty days are fetched again next visit
+        let filled = cols.t.length; while (filled > 0 && (cols.x[filled - 1] == null || cols.n[filled - 1] == null)) filled--;
+        const got = {}; for (const f of ["t","x","n","m","p","w","h"]) got[f] = cols[f].slice(0, filled);
+        if (filled > 0) rec.yrs[job.y] = { e: got.t[filled - 1], c: job.append ? mergeCols(rec.yrs[job.y].c, got) : got };
         if (rec.el == null && j.elevation != null) rec.el = j.elevation;
         if (p.elev == null && rec.el != null) p.elev = rec.el;
         writeStore(k, rec);
