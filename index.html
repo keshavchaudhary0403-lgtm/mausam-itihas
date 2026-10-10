@@ -433,7 +433,7 @@ footer a{color:inherit}
     </main>
 
     <footer>
-      Data from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>: ERA5 reanalysis for history, national weather models for the forecast. Historical values are estimates for an area of roughly 10 to 25 km around the point, not readings from a single station, so hill and coastal spots can differ from local records. The archive runs about 5 days behind today.
+      Data from <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a>: ERA5 reanalysis for history, national weather models for the forecast. Historical values are estimates for an area of roughly 10 to 25 km around the point, not readings from a single station, so hill and coastal spots can differ from local records. The archive runs about 5 days behind, so the most recent days come from the latest weather analysis until the archive catches up.
     </footer>
   </div>
 </div>
@@ -1017,6 +1017,28 @@ function progress(msg, done, total) {
 }
 let renderTimer;
 const renderSoon = () => { clearTimeout(renderTimer); renderTimer = setTimeout(() => { render(); renderForecast(); renderNowNorm(); }, 120); };
+/* The ERA5 archive runs ~5 days behind. Fill the days between the archive's last day and yesterday
+   from Open-Meteo's forecast API (past_days), which carries the latest weather analysis for recent days. */
+const recentCache = new Map();
+async function recentDays(p) {
+  const k = keyOf(p.lat, p.lon) + "|" + TODAY;
+  if (recentCache.has(k)) return recentCache.get(k);
+  const vars = "temperature_2m_max,temperature_2m_min,temperature_2m_mean,precipitation_sum,wind_speed_10m_max,relative_humidity_2m_mean";
+  let out = [];
+  try {
+    const j = await getJSON(`https://api.open-meteo.com/v1/forecast?latitude=${(+p.lat).toFixed(4)}&longitude=${(+p.lon).toFixed(4)}&timezone=${encodeURIComponent(TZ)}&past_days=14&forecast_days=1&daily=${vars}`, 15000);
+    const d = j.daily;
+    out = colsToRows({ t: d.time, x: d.temperature_2m_max, n: d.temperature_2m_min, m: d.temperature_2m_mean, p: d.precipitation_sum, w: d.wind_speed_10m_max, h: d.relative_humidity_2m_mean || d.time.map(() => null) })
+      .filter(r => r.date < TODAY).map(r => ({ ...r, recent: true }));
+  } catch (e) { console.warn("recent days", e.message); }
+  recentCache.set(k, out);
+  return out;
+}
+function withRecent(base, rec) {
+  if (!base.length || !rec.length) return base;
+  const last = base[base.length - 1].date;
+  return base.concat(rec.filter(r => r.date > last));
+}
 async function fetchHistory() {
   const tok = ++loadToken, p = place;
   $("#main").classList.add("loading");
@@ -1027,7 +1049,9 @@ async function fetchHistory() {
       if (rs.length) { rows = rs; $("#placeMeta").innerHTML = placeMeta(); $("#main").hidden = false; $("#main").classList.remove("loading"); renderSoon(); }
     });
     if (tok !== loadToken) return false;
-    rows = r; writeURL();
+    rows = withRecent(r, await recentDays(p));
+    if (tok !== loadToken) return false;
+    writeURL();
     $("#status").hidden = true; $("#main").hidden = false; $("#main").classList.remove("loading");
     return true;
   } catch (e) {
@@ -1064,7 +1088,7 @@ function render() {
   if (!rows.length) return;
   $$("#rangeSeg button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.n === years)); syncPills();
   const rs = currentRows(), ys = byYear(rs);
-  $("#rangeNote").textContent = `${firstYear()}–${END_Y - 1} + ${END_Y} so far`;
+  $("#rangeNote").textContent = `${firstYear()}–${END_Y - 1} + ${END_Y} up to ${fmtDate(rows[rows.length - 1].date)}`;
   $("#eyebrow").textContent = `${years + 1} years · ${rs.length.toLocaleString("en-IN")} days of data`;
   renderStats(rs, ys); renderStripes(ys); renderInsights(rs, ys); renderCharts(); renderHeatmap(rs); renderActuals(); renderTable(ys); initDay();
   if (fcData) { renderForecast(); renderNowNorm(); }
@@ -1254,7 +1278,7 @@ function renderTable(ys) {
 /* ================= daily actuals ================= */
 let axY = "all", axM = "all", axSpan = null;
 function axRows() {
-  if (axSpan) { const from = addDays(END, -axSpan + 1); return rows.filter(r => r.date >= from); }
+  if (axSpan) { const from = addDays(rows[rows.length - 1].date, -axSpan + 1); return rows.filter(r => r.date >= from); }
   return rows.filter(r => (axY === "all" || r.y === +axY) && (axM === "all" || r.m === +axM));
 }
 function syncAxSelects() {
@@ -1298,26 +1322,28 @@ function renderActuals() {
     <div><span>Lowest</span><b style="color:var(--cold)">${f1(lo.tmin)}°</b><small>${fmtDate(lo.date)}</small></div>
     <div><span>Wettest day</span><b style="color:var(--rain)">${f1(wet.rain)} mm</b><small>${wet.rain > 0 ? fmtDate(wet.date) : "no rain"}</small></div>
     <div><span>Total rain</span><b>${tot < 10 ? f1(tot) : f0(tot)} mm</b><small>${rainy} rainy days · ${label}</small></div>`;
-  $("#axCap").textContent = `${rs.length.toLocaleString("en-IN")} days shown, ${fmtDate(rs[0].date)} to ${fmtDate(rs.at(-1).date)}. Larger dots mark the highest and lowest reading.`;
+  const nRec = rs.filter(r => r.recent).length;
+  $("#axCap").textContent = `${rs.length.toLocaleString("en-IN")} days shown, ${fmtDate(rs[0].date)} to ${fmtDate(rs.at(-1).date)}. Larger dots mark the highest and lowest reading.${nRec ? ` The last ${nRec} day${nRec > 1 ? "s" : ""} (dashed) come from the latest weather analysis and can shift slightly once the full archive catches up, usually within 5 days.` : ""}`;
   const n = rs.length, many = n > 400, hot = css("--hot"), cold = css("--cold"), rain = css("--rain"), ink = css("--ink");
   const iHi = rs.indexOf(hi), iLo = rs.indexOf(lo);
   const pr = (i0) => ctx => ctx.dataIndex === i0 ? 6 : (n <= 62 ? 2.5 : 0);
+  const dashRecent = { borderDash: ctx => rs[ctx.p1DataIndex]?.recent ? [4, 3] : undefined };
   const o = tempOpts();
   o.animation = n > 1500 || RM ? false : { duration: 600 };
   o.plugins.tooltip.callbacks = {
-    title: it => fmtDate(rs[it[0].dataIndex].date),
+    title: it => fmtDate(rs[it[0].dataIndex].date) + (rs[it[0].dataIndex].recent ? " · recent, provisional" : ""),
     label: c => ` ${c.dataset.label}: ${f1(c.raw)} °C`
   };
   o.scales.x.ticks = { color: css("--muted"), autoSkip: true, maxTicksLimit: window.innerWidth < 600 ? 5 : 10, maxRotation: 0,
-    callback: (v, i) => { const d = rs[i]?.date; if (!d) return ""; const [y, m, dd] = d.split("-"); return n > 120 ? `${MON[+m - 1]} ${y}` : `${+dd} ${MON[+m - 1]}`; } };
+    callback: (v, i) => { const d = rs[i]?.date; if (!d) return ""; const [y, m, dd] = d.split("-"); return n > 400 ? `${MON[+m - 1]} ${y}` : `${+dd} ${MON[+m - 1]}`; } };
   o.scales.y.grace = "8%";
   o.onClick = (e, els) => { if (!els.length) return; const r = rs[els[0].index]; $("#dayPick").value = r.date; renderDay(); };
   charts.ax = new Chart($("#axChart"), {
     data: {
       labels: rs.map(r => r.date),
       datasets: [
-        { type: "line", label: "High (actual)", data: rs.map(r => r.tmax), borderColor: hot, backgroundColor: hot, borderWidth: many ? 1.2 : 2, tension: many ? 0 : .25, pointRadius: pr(iHi), pointHoverRadius: 5, pointBackgroundColor: hot },
-        { type: "line", label: "Low (actual)", data: rs.map(r => r.tmin), borderColor: cold, backgroundColor: cold, borderWidth: many ? 1.2 : 2, tension: many ? 0 : .25, pointRadius: pr(iLo), pointHoverRadius: 5, pointBackgroundColor: cold },
+        { type: "line", label: "High (actual)", data: rs.map(r => r.tmax), borderColor: hot, backgroundColor: hot, borderWidth: many ? 1.2 : 2, tension: many ? 0 : .25, pointRadius: pr(iHi), pointHoverRadius: 5, pointBackgroundColor: hot, segment: dashRecent },
+        { type: "line", label: "Low (actual)", data: rs.map(r => r.tmin), borderColor: cold, backgroundColor: cold, borderWidth: many ? 1.2 : 2, tension: many ? 0 : .25, pointRadius: pr(iLo), pointHoverRadius: 5, pointBackgroundColor: cold, segment: dashRecent },
       ]
     },
     options: o,
@@ -1346,7 +1372,7 @@ function renderActuals() {
 
 /* ================= date explorer ================= */
 function initDay() {
-  const inp = $("#dayPick"); inp.min = rows[0].date; inp.max = END;
+  const inp = $("#dayPick"); inp.min = rows[0].date; inp.max = rows[rows.length - 1].date;
   if (!inp.value || inp.value > END || inp.value < inp.min) inp.value = lastYearToday();
   renderDay();
 }
