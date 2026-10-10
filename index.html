@@ -161,9 +161,15 @@ button{cursor:pointer}
 .badge.solid{background:var(--accent);color:var(--accent-ink)}
 h3{font-family:var(--f-display);font-size:1.1rem;font-weight:600;margin:0}
 .ax-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
-.ax-bar select{padding:9px 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--glass-strong);font-weight:500}
+.ax-bar select{-webkit-appearance:none;appearance:none;padding:9px 38px 9px 16px;border:1px solid var(--line-strong);border-radius:999px;font-weight:500;line-height:1.2;cursor:pointer;
+  background:var(--glass-strong) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%235d6a80' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") no-repeat right 14px center/14px 14px}
+:root[data-theme="dark"] .ax-bar select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%239aa7bd' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E")}
+.ax-bar select:hover{border-color:var(--accent)}
+.ax-step{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);background:var(--glass-strong);border-radius:999px;padding:8px 14px;font-weight:500;font-size:.88rem;transition:border-color .2s}
+.ax-step:hover{border-color:var(--accent)}
+.ax-step svg{width:14px;height:14px}
 .icon-btn.sm{width:36px;height:36px;font-size:1.2rem;line-height:1}
-.icon-btn.sm:disabled{opacity:.35;cursor:default;transform:none}
+.icon-btn.sm:disabled,.ax-step:disabled{opacity:.35;cursor:default;transform:none}
 .ax-quick{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
 @media (max-width:620px){.ax-quick{margin-left:0}}
 .ax-sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:14px}
@@ -383,10 +389,10 @@ footer a{color:inherit}
           <div><h2>Daily actuals <span class="badge solid">Actual readings</span></h2><p>Every single day’s recorded high, low and rainfall, with no averaging. Pick a year and month, or view the whole range. Tap the chart to open that day.</p></div>
         </div>
         <div class="ax-bar">
-          <button class="icon-btn sm" type="button" id="axPrev" aria-label="Previous period">‹</button>
+          <button class="ax-step" type="button" id="axPrev" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg><span>Previous</span></button>
           <select id="axYear" aria-label="Year"></select>
           <select id="axMonth" aria-label="Month"></select>
-          <button class="icon-btn sm" type="button" id="axNext" aria-label="Next period">›</button>
+          <button class="ax-step" type="button" id="axNext" hidden><span>Next</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
           <span class="ax-quick">
             <button class="chip" type="button" data-ax="30">Last 30 days</button>
             <button class="chip" type="button" data-ax="365">Last 12 months</button>
@@ -1291,7 +1297,16 @@ function syncAxSelects() {
   $("#axMonth").innerHTML = `<option value="all">All months</option>` + MON.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
   $("#axYear").value = axSpan ? "all" : axY; $("#axMonth").value = axSpan ? "all" : axM;
   const stepOK = !axSpan && axY !== "all";
-  $("#axPrev").disabled = !stepOK; $("#axNext").disabled = !stepOK;
+  const unit = axM === "all" ? "year" : "month";
+  $("#axPrev").hidden = $("#axNext").hidden = !stepOK;
+  if (stepOK) {
+    const yrs = [...new Set(rows.map(r => r.y))], y = +axY, m = axM === "all" ? 0 : +axM;
+    const firstYM = rows[0].y * 100 + rows[0].m, lastYM = rows[rows.length - 1].y * 100 + rows[rows.length - 1].m;
+    const atStart = unit === "year" ? y <= Math.min(...yrs) : y * 100 + m <= firstYM;
+    const atEnd = unit === "year" ? y >= Math.max(...yrs) : y * 100 + m >= lastYM;
+    $("#axPrev").querySelector("span").textContent = `Previous ${unit}`; $("#axNext").querySelector("span").textContent = `Next ${unit}`;
+    $("#axPrev").disabled = atStart; $("#axNext").disabled = atEnd;
+  }
   $$(".ax-quick .chip").forEach(c => c.style.cssText = (c.dataset.ax === String(axSpan ?? (axY === "all" && axM === "all" ? "all" : ""))) ? "background:var(--ink);color:var(--bg)" : "");
 }
 function axStep(dir) {
