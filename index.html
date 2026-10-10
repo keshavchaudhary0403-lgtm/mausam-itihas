@@ -135,7 +135,7 @@ button{cursor:pointer}
 /* climate stripes */
 .stripes{display:flex;height:96px;border-radius:12px;overflow:hidden;margin-top:6px}
 .stripes div{flex:1;transform-origin:bottom;transition:flex .3s,filter .2s;position:relative}
-.stripes div:hover{flex:2.2;filter:brightness(1.08)}
+.stripes div:hover,.stripes div.on{flex:2.2;filter:brightness(1.08)}
 .stripes-meta{display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-top:8px}
 .stripe-read{font-size:.88rem;margin-top:4px;min-height:1.4em}
 
@@ -156,6 +156,55 @@ button{cursor:pointer}
 .legend{display:flex;align-items:center;gap:10px;margin-top:12px;font-size:.78rem;color:var(--muted)}
 .legend .bar{flex:0 1 240px;height:8px;border-radius:99px}
 
+/* clickable affordances */
+.clickable{cursor:pointer;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .2s,box-shadow .2s}
+.clickable:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.stat.clickable .lab::after{content:"›";margin-left:auto;font-size:1.1rem;line-height:1;color:var(--faint);transition:transform .2s,color .2s}
+.stat.clickable:hover .lab::after{transform:translateX(3px);color:var(--accent)}
+.now-more{grid-column:1/-1;font-size:.82rem;font-weight:600;color:var(--accent);margin-top:8px}
+.now-more span{display:inline-block;transition:transform .2s}
+.now-card.clickable:hover .now-more span{transform:translateX(3px)}
+.top3 .tr{cursor:pointer;border-radius:6px;padding:2px 4px;margin:-2px -4px}
+.top3 .tr:hover{background:var(--bg2)}
+.ins.go{cursor:pointer;border-color:var(--line)}
+.ins.go:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.ins .yr{font:inherit;font-weight:700;border:0;background:none;padding:0;color:inherit;text-decoration:underline;text-decoration-color:color-mix(in srgb,var(--accent) 50%,transparent);text-underline-offset:3px;cursor:pointer}
+.ins .yr:hover{color:var(--accent)}
+.link-btn{font:inherit;font-size:.86rem;font-weight:600;border:0;background:none;padding:0;color:var(--accent);cursor:pointer}
+.fd{cursor:pointer;border:1px solid transparent}
+.fd:hover{border-color:color-mix(in srgb,var(--accent) 55%,transparent)}
+.fd .more{font-size:.74rem;font-weight:600;color:var(--accent);margin-top:2px}
+#yearTable tbody tr{cursor:pointer}
+#yearTable td.dl{text-decoration:underline dotted;text-underline-offset:3px}
+section[id],#actuals{scroll-margin-top:92px}
+@keyframes flash{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--accent) 55%,transparent),var(--shadow)}100%{box-shadow:0 0 0 14px transparent,var(--shadow)}}
+.flash{animation:flash 1.1s ease-out}
+/* day detail */
+.daybox{max-width:880px;display:flex;flex-direction:column;max-height:calc(100vh - 32px - env(safe-area-inset-top,0px))}
+.pal-back.day{align-items:center;padding-top:16px}
+.dd-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dd-h .t{flex:1;min-width:0}
+.dd-h b{display:block;font-family:var(--f-display);font-size:1.25rem;letter-spacing:-.01em}
+.dd-h small{color:var(--muted);font-size:.84rem}
+.dd-body{overflow:auto;padding:16px;display:flex;flex-direction:column;gap:6px}
+.dd-body>*{flex-shrink:0}
+.dd-sum{display:grid;grid-template-columns:auto 1fr;gap:4px 18px;align-items:center}
+.dd-sum .ic svg{width:64px;height:64px}
+.dd-sum .big{font-family:var(--f-display);font-weight:800;font-size:2rem;letter-spacing:-.03em}
+.dd-sum .big b{color:var(--hot)} .dd-sum .big em{font-style:normal;color:var(--cold)}
+.dd-facts{grid-column:1/-1;display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.dd-facts div{background:var(--bg2);border-radius:12px;padding:9px 12px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.dd-facts span{font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600}
+.dd-facts b{font-size:1rem;font-weight:600}
+.chart-box.dd-c{height:220px}.chart-box.dd-r{height:120px}
+.dd-hours{display:grid;grid-auto-flow:column;grid-auto-columns:76px;gap:6px;overflow-x:auto;padding:4px 0 8px;scroll-snap-type:x proximity}
+.dd-hours div{scroll-snap-align:start;background:var(--bg2);border-radius:12px;padding:8px 6px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem;border:1px solid transparent}
+.dd-hours div.now{border-color:var(--accent)}
+.dd-hours svg{width:28px;height:28px}
+.dd-hours .h{color:var(--muted);font-weight:600}
+.dd-hours .tp{font-family:var(--f-mono);font-size:.92rem}
+.dd-hours .pp{color:var(--rain)} .dd-hours .wd{color:var(--muted)}
+.dd-msg{color:var(--muted);font-size:.9rem;padding:8px 0}
 /* daily actuals */
 .badge{display:inline-block;vertical-align:middle;margin-left:8px;font-family:var(--f-body);font-size:.66rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;padding:3px 8px;border-radius:99px;background:var(--line);color:var(--muted)}
 .badge.solid{background:var(--accent);color:var(--accent-ink)}
@@ -330,11 +379,12 @@ footer a{color:inherit}
           <span class="range-note" id="rangeNote"></span>
         </div>
       </div>
-      <div class="now-card" id="nowCard">
+      <div class="now-card clickable" id="nowCard" role="button" tabindex="0" aria-label="Open today's hourly forecast">
         <div class="now-t num" id="nowT">–<sup>°C</sup></div>
         <div class="now-c" id="nowC">Loading current weather</div>
         <div class="now-s" id="nowS"></div>
         <div class="now-norm" id="nowNorm" hidden></div>
+        <div class="now-more">Hourly forecast <span>›</span></div>
       </div>
     </header>
 
@@ -344,26 +394,26 @@ footer a{color:inherit}
       <div class="insights" id="insights" aria-label="Highlights"></div>
 
       <div class="bento" id="bento">
-        <div class="card stat" style="--glow:var(--hot)"><span class="lab"><i style="background:var(--hot)"></i>Hottest day</span><span class="val" data-k="hi">–</span><span class="sub" data-s="hi"></span><div class="top3" data-t="hi"></div></div>
-        <div class="card stat" style="--glow:var(--cold)"><span class="lab"><i style="background:var(--cold)"></i>Coldest night</span><span class="val" data-k="lo">–</span><span class="sub" data-s="lo"></span><div class="top3" data-t="lo"></div></div>
+        <div class="card stat clickable" data-go="day:hi" role="button" tabindex="0" style="--glow:var(--hot)"><span class="lab"><i style="background:var(--hot)"></i>Hottest day</span><span class="val" data-k="hi">–</span><span class="sub" data-s="hi"></span><div class="top3" data-t="hi"></div></div>
+        <div class="card stat clickable" data-go="day:lo" role="button" tabindex="0" style="--glow:var(--cold)"><span class="lab"><i style="background:var(--cold)"></i>Coldest night</span><span class="val" data-k="lo">–</span><span class="sub" data-s="lo"></span><div class="top3" data-t="lo"></div></div>
         <div class="card wide reveal pre" id="stripesCard">
           <div class="card-h" style="margin-bottom:6px"><div><h2>Warming stripes</h2><p>One stripe per year, coloured by how warm it was compared with the average of this range. Tap or hover a stripe.</p></div></div>
           <div class="stripes" id="stripes"></div>
           <div class="stripes-meta"><span id="sFirst"></span><span id="sLast"></span></div>
           <div class="stripe-read" id="stripeRead"></div>
         </div>
-        <div class="card stat" style="--glow:var(--rain)"><span class="lab"><i style="background:var(--rain)"></i>Wettest day</span><span class="val" data-k="wet">–</span><span class="sub" data-s="wet"></span></div>
-        <div class="card stat" style="--glow:var(--rain)"><span class="lab"><i style="background:var(--rain)"></i>Rain in a year</span><span class="val" data-k="avgRain">–</span><span class="sub" data-s="avgRain"></span></div>
-        <div class="card stat" style="--glow:var(--warm)"><span class="lab"><i style="background:var(--warm)"></i>Days at 40 °C+</span><span class="val" data-k="hot">–</span><span class="sub" data-s="hot"></span></div>
-        <div class="card stat" style="--glow:var(--accent)"><span class="lab"><i style="background:var(--accent)"></i>Warming trend</span><span class="val" data-k="trend">–</span><span class="sub" data-s="trend"></span></div>
+        <div class="card stat clickable" data-go="day:wet" role="button" tabindex="0" style="--glow:var(--rain)"><span class="lab"><i style="background:var(--rain)"></i>Wettest day</span><span class="val" data-k="wet">–</span><span class="sub" data-s="wet"></span></div>
+        <div class="card stat clickable" data-go="sec:#summary" role="button" tabindex="0" style="--glow:var(--rain)"><span class="lab"><i style="background:var(--rain)"></i>Rain in a year</span><span class="val" data-k="avgRain">–</span><span class="sub" data-s="avgRain"></span></div>
+        <div class="card stat clickable" data-go="sec:#summary" role="button" tabindex="0" style="--glow:var(--warm)"><span class="lab"><i style="background:var(--warm)"></i>Days at 40 °C+</span><span class="val" data-k="hot">–</span><span class="sub" data-s="hot"></span></div>
+        <div class="card stat clickable" data-go="sec:#yearSec" role="button" tabindex="0" style="--glow:var(--accent)"><span class="lab"><i style="background:var(--accent)"></i>Warming trend</span><span class="val" data-k="trend">–</span><span class="sub" data-s="trend"></span></div>
       </div>
 
       <div class="two section">
-        <section class="card reveal pre">
+        <section id="yearSec" class="card reveal pre">
           <div class="card-h"><div><h2>Year by year <span class="badge">Averages</span></h2><p>Averages only: the average daily high and low for each year, with total rainfall as bars. For actual day-by-day readings, see Daily actuals below.</p></div></div>
           <div class="chart-box"><canvas id="yearChart"></canvas></div>
         </section>
-        <section class="card reveal pre">
+        <section id="monthSec" class="card reveal pre">
           <div class="card-h"><div><h2>A typical year <span class="badge">Averages</span></h2><p>Monthly averages: when the heat peaks and when the monsoon arrives.</p></div></div>
           <div class="chart-box"><canvas id="monthChart"></canvas></div>
         </section>
@@ -371,7 +421,7 @@ footer a{color:inherit}
 
       <section class="card section reveal pre">
         <div class="card-h">
-          <div><h2>Every month, every year <span class="badge">Averages</span></h2><p>Averages only: each tile is one month’s average. Read across to compare the same month over the years. Actual extremes are in Daily actuals below.</p></div>
+          <div><h2>Every month, every year <span class="badge">Averages</span></h2><p>Averages only: each tile is one month’s average. Read across to compare the same month over the years. Tap a tile to see that month day by day.</p></div>
           <div class="seg small" id="hmSeg" role="group" aria-label="Heatmap measure">
             <span class="pill"></span>
             <button type="button" data-k="tmax" aria-pressed="true">Avg high</button>
@@ -404,7 +454,7 @@ footer a{color:inherit}
         <div class="sub-lab"><i style="background:var(--rain)"></i>Rainfall (mm), actual daily total</div><div class="chart-box rain big-rain"><canvas id="axRain"></canvas></div>
         <p class="muted" id="axCap" style="font-size:.82rem;margin:8px 0 0"></p>
       </section>
-      <section class="card section reveal pre">
+      <section id="lookup" class="card section reveal pre">
         <div class="card-h"><div><h2>Look up a date</h2><p>Any day in the selected range, and the same date in every other year. Tap a year to jump to it.</p></div></div>
         <div class="dx">
           <div>
@@ -424,14 +474,14 @@ footer a{color:inherit}
         </div>
       </section>
 
-      <section class="card section reveal pre">
+      <section id="fcSec" class="card section reveal pre">
         <div class="card-h"><div><h2>Next 7 days vs normal</h2><p id="fcNote">Each day's forecast high compared with the average for that time of year.</p></div></div>
         <div class="fc" id="forecast"></div>
       </section>
 
-      <section class="card section reveal pre">
+      <section id="summary" class="card section reveal pre">
         <div class="card-h">
-          <div><h2>Yearly summary</h2><p>Rainy day uses the IMD definition of 2.5 mm or more. Hot day means a high of 40 °C or more.</p></div>
+          <div><h2>Yearly summary</h2><p>Rainy day uses the IMD definition of 2.5 mm or more. Hot day means a high of 40 °C or more. Tap a year to see it day by day, or a highest or lowest value to open that day.</p></div>
           <button class="btn" id="csvBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download CSV</button>
         </div>
         <div class="tbl"><table id="yearTable"></table></div>
@@ -466,6 +516,27 @@ footer a{color:inherit}
       <input id="mapName" type="text" placeholder="Name this place" aria-label="Place name" autocomplete="off">
       <span class="num muted" id="mapCoords">Tap the map</span>
       <button class="btn primary" type="button" id="mapUse" disabled>Use this spot</button>
+    </div>
+  </div>
+</div>
+<div class="pal-back day" id="dayBack" hidden>
+  <div class="pal daybox" role="dialog" aria-modal="true" aria-labelledby="ddTitle">
+    <div class="dd-h">
+      <button class="ax-step" type="button" id="ddPrev" aria-label="Previous day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg></button>
+      <div class="t"><b id="ddTitle"></b><small id="ddSub"></small></div>
+      <button class="ax-step" type="button" id="ddNext" aria-label="Next day"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 6 6 6-6 6"/></svg></button>
+      <button class="icon-btn sm" type="button" id="ddClose" aria-label="Close">✕</button>
+    </div>
+    <div class="dd-body">
+      <div class="dd-sum" id="ddSum"></div>
+      <div class="dd-msg" id="ddMsg" hidden></div>
+      <div class="dd-hours" id="ddHours"></div>
+      <div class="sub-lab"><i style="background:var(--hot)"></i>Temperature (°C), hour by hour</div>
+      <div class="chart-box dd-c"><canvas id="ddTemp"></canvas></div>
+      <div class="sub-lab"><i style="background:var(--rain)"></i>Chance of rain (%), hour by hour</div>
+      <div class="chart-box dd-r"><canvas id="ddRain"></canvas></div>
+      <div class="sub-lab" style="margin-top:12px"><i style="background:var(--accent)"></i><span id="ddPastT">This date in past years</span></div>
+      <div class="bars" id="ddPast"></div>
     </div>
   </div>
 </div>
@@ -1126,7 +1197,7 @@ function renderStats(rs, ys) {
   const top = (key, dir) => [...rs].sort((a, b) => dir * (b[key] - a[key])).slice(0, 4);
   const draw = (k, list, key, col, label) => {
     const vals = list.map(r => r[key]), lo2 = Math.min(...vals), hi2 = Math.max(...vals), sp = (hi2 - lo2) || 1;
-    $(`[data-t="${k}"]`).innerHTML = `<span class="tl">${label}</span>` + list.slice(1).map(r => `<div class="tr"><span class="d">${fmtDate(r.date)}</span><b style="color:${col}">${f1(r[key])}°</b><i><span style="width:${k === "hi" ? 40 + (r[key] - lo2) / sp * 60 : 40 + (hi2 - r[key]) / sp * 60}%;background:${col}"></span></i></div>`).join("");
+    $(`[data-t="${k}"]`).innerHTML = `<span class="tl">${label}</span>` + list.slice(1).map(r => `<div class="tr" data-d="${r.date}" role="button" tabindex="0"><span class="d">${fmtDate(r.date)}</span><b style="color:${col}">${f1(r[key])}°</b><i><span style="width:${k === "hi" ? 40 + (r[key] - lo2) / sp * 60 : 40 + (hi2 - r[key]) / sp * 60}%;background:${col}"></span></i></div>`).join("");
   };
   draw("hi", top("tmax", 1), "tmax", "var(--hot)", "Next hottest");
   draw("lo", top("tmin", -1), "tmin", "var(--cold)", "Next coldest");
@@ -1155,35 +1226,36 @@ function renderStripes(ys) {
     const d = y.avgMean - mean, el = document.createElement("div");
     el.style.background = divColor(d / span);
     if (!RM) el.animate([{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }], { duration: 500, delay: i * 35, easing: "cubic-bezier(.2,.9,.3,1.2)", fill: "backwards" });
-    const say = () => { $("#stripeRead").innerHTML = `<b class="num">${y.y}${y.partial ? " (so far)" : ""}</b> · average ${f1(y.avgMean)} °C, <b style="color:${d >= 0 ? "var(--hot)" : "var(--cold)"}">${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(2)} °C</b> vs the range average`; };
-    el.addEventListener("mouseenter", say); el.addEventListener("click", say);
+    const say = () => { $("#stripeRead").innerHTML = `<b class="num">${y.y}${y.partial ? " (so far)" : ""}</b> · average ${f1(y.avgMean)} °C, <b style="color:${d >= 0 ? "var(--hot)" : "var(--cold)"}">${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(2)} °C</b> vs the range average · <button type="button" class="link-btn" data-y="${y.y}">See ${y.y} day by day ›</button>`; };
+    el.addEventListener("mouseenter", say); el.addEventListener("click", () => { if (el.classList.contains("on")) showActuals(y.y); else { $$("#stripes div").forEach(x => x.classList.remove("on")); el.classList.add("on"); say(); } }); el.style.cursor = "pointer";
     el.tabIndex = 0; el.setAttribute("aria-label", `${y.y}: ${f1(y.avgMean)} °C`); el.addEventListener("focus", say);
     box.appendChild(el);
   });
   $("#sFirst").textContent = ys[0]?.y ?? ""; $("#sLast").textContent = ys.at(-1)?.y ?? "";
   const warm = [...full].sort((a, b) => b.avgMean - a.avgMean)[0];
-  $("#stripeRead").innerHTML = warm ? `Warmest full year: <b class="num">${warm.y}</b> at ${f1(warm.avgMean)} °C average` : "";
+  $("#stripeRead").innerHTML = warm ? `Warmest full year: <b class="num">${warm.y}</b> at ${f1(warm.avgMean)} °C average · <button type="button" class="link-btn" data-y="${warm.y}">See it day by day ›</button>` : "";
 }
 
 function renderInsights(rs, ys) {
   const full = ys.filter(y => !y.partial), out = [];
   if (full.length >= 2) {
     const byT = [...full].sort((a, b) => b.avgMean - a.avgMean), byR = [...full].sort((a, b) => b.rain - a.rain);
-    out.push(["var(--hot)", `<b>${byT[0].y}</b> was the warmest year in this range; <b>${byT.at(-1).y}</b> the coolest.`]);
-    out.push(["var(--rain)", `<b>${byR[0].y}</b> was the wettest year (${f0(byR[0].rain)} mm) and <b>${byR.at(-1).y}</b> the driest (${f0(byR.at(-1).rain)} mm).`]);
+    const Y = y => `<button type="button" class="yr" data-y="${y}">${y}</button>`;
+    out.push(["var(--hot)", `${Y(byT[0].y)} was the warmest year in this range; ${Y(byT.at(-1).y)} the coolest.`, "y:" + byT[0].y]);
+    out.push(["var(--rain)", `${Y(byR[0].y)} was the wettest year (${f0(byR[0].rain)} mm) and ${Y(byR.at(-1).y)} the driest (${f0(byR.at(-1).rain)} mm).`, "y:" + byR[0].y]);
     const tot = full.reduce((s, y) => s + y.rain, 0), mon = full.reduce((s, y) => s + y.mon, 0);
-    if (tot > 0) out.push(["var(--rain)", `<b>${Math.round(mon / tot * 100)}%</b> of the year's rain falls in the June–September monsoon.`]);
+    if (tot > 0) out.push(["var(--rain)", `<b>${Math.round(mon / tot * 100)}%</b> of the year's rain falls in the June–September monsoon.`, "sec:#monthSec"]);
     const tx = slope(full, "avgMax"), tn = slope(full, "avgMin");
-    if (tx != null && tn != null && Math.abs(tn - tx) > .1) out.push(["var(--cold)", tn > tx ? `Nights are warming faster than days (${tn >= 0 ? "+" : ""}${tn.toFixed(2)} vs ${tx >= 0 ? "+" : ""}${tx.toFixed(2)} °C per decade).` : `Days are warming faster than nights (${tx >= 0 ? "+" : ""}${tx.toFixed(2)} vs ${tn >= 0 ? "+" : ""}${tn.toFixed(2)} °C per decade).`]);
+    if (tx != null && tn != null && Math.abs(tn - tx) > .1) out.push(["var(--cold)", tn > tx ? `Nights are warming faster than days (${tn >= 0 ? "+" : ""}${tn.toFixed(2)} vs ${tx >= 0 ? "+" : ""}${tx.toFixed(2)} °C per decade).` : `Days are warming faster than nights (${tx >= 0 ? "+" : ""}${tx.toFixed(2)} vs ${tn >= 0 ? "+" : ""}${tn.toFixed(2)} °C per decade).`, "sec:#yearSec"]);
   }
   const ytd = rs.filter(r => r.y === END_Y), endD = doy(END.slice(5));
   if (ytd.length > 30) {
     const past = rs.filter(r => r.y < END_Y && r.doy <= endD);
     const a = ytd.reduce((s, r) => s + r.tmean, 0) / ytd.length, b = past.reduce((s, r) => s + r.tmean, 0) / (past.length || 1);
     const d = a - b;
-    out.push([d >= 0 ? "var(--warm)" : "var(--cold)", `${END_Y} so far is <b>${Math.abs(d).toFixed(1)} °C ${d >= 0 ? "warmer" : "cooler"}</b> than the same stretch in earlier years.`]);
+    out.push([d >= 0 ? "var(--warm)" : "var(--cold)", `${END_Y} so far is <b>${Math.abs(d).toFixed(1)} °C ${d >= 0 ? "warmer" : "cooler"}</b> than the same stretch in earlier years.`, "y:" + END_Y]);
   }
-  $("#insights").innerHTML = out.map(([c, t]) => `<div class="ins"><i style="background:${c}"></i><span>${t}</span></div>`).join("");
+  $("#insights").innerHTML = out.map(([c, t, go]) => `<div class="ins${go ? " go" : ""}"${go ? ` data-go="${go}" role="button" tabindex="0"` : ""}><i style="background:${c}"></i><span>${t}</span></div>`).join("");
 }
 
 function chartBase() {
@@ -1228,7 +1300,7 @@ function renderCharts() {
         { type: "bar", label: "Rainfall", data: ys.map(y => Math.round(y.rain)), backgroundColor: vgrad(rain, .55, .08), hoverBackgroundColor: rgba(rain, .7), borderRadius: 8, borderSkipped: false, yAxisID: "y2" }
       ]
     },
-    options: (() => { const o = chartBase(); o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.raw}${c.dataset.type === "bar" ? " mm" : " °C"}`, footer: it => it[0]?.label.endsWith("*") ? "* year so far" : "" }; return o; })()
+    options: (() => { const o = chartBase(); o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.raw}${c.dataset.type === "bar" ? " mm" : " °C"}`, footer: it => (it[0]?.label.endsWith("*") ? "* year so far\n" : "") + "Tap to see every day" }; o.onClick = (e, els) => { if (els.length) showActuals(ys[els[0].index].y); }; o.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; }; return o; })()
   });
   const ym = byYearMonth(rs), m = Array.from({ length: 12 }, () => ({ x: 0, n: 0, mn: 0, r: 0, rn: 0 }));
   for (const r of rs) { const a = m[r.m - 1]; a.x += r.tmax; a.mn += r.tmin; a.n++; }
@@ -1242,7 +1314,7 @@ function renderCharts() {
         { type: "bar", label: "Rainfall", data: m.map(a => a.rn ? Math.round(a.r / a.rn) : null), backgroundColor: vgrad(rain, .55, .08), hoverBackgroundColor: rgba(rain, .7), borderRadius: 8, borderSkipped: false, yAxisID: "y2" }
       ]
     },
-    options: (() => { const o = chartBase(); o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.raw}${c.dataset.type === "bar" ? " mm" : " °C"}` }; return o; })()
+    options: (() => { const o = chartBase(); o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.raw}${c.dataset.type === "bar" ? " mm" : " °C"}`, footer: () => "Tap to see this month in every year" }; o.onClick = (e, els) => { if (els.length) showActuals(null, els[0].index + 1); }; o.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; }; return o; })()
   });
 }
 
@@ -1266,11 +1338,11 @@ function renderHeatmap(rs, key = hmKey, grid = "#heatmap", legend = "#hmLegend")
       const v = a[key], c = color(v), txt = isRain ? (key === "xwet" ? f1(v) : Math.round(v)) : v.toFixed(1);
       const day = isRain ? a.wetD : (key === "tmin" || key === "xmin") ? a.loD : a.hiD;
       const what = { tmax: "average high", tmin: "average low", xmax: `hottest day, ${fmtDate(day.date)}`, xmin: `coldest night, ${fmtDate(day.date)}`, xwet: `wettest day, ${fmtDate(day.date)}`, rain: "total rain" }[key];
-      h += `<button type="button" class="c" data-d="${day.date}" style="background:${c.bg};color:${c.fg};--d:${(i++ % 60) * 8}ms" title="${MON[m - 1]} ${y} · ${what}: ${txt} ${isRain ? "mm" : "°C"}${a.full ? "" : " (partial month)"}">${txt}</button>`;
+      h += `<button type="button" class="c" data-d="${day.date}" data-y="${y}" data-m="${m}" style="background:${c.bg};color:${c.fg};--d:${(i++ % 60) * 8}ms" title="${MON[m - 1]} ${y} · ${what}: ${txt} ${isRain ? "mm" : "°C"}${a.full ? "" : " (partial month)"} · tap to see every day">${txt}</button>`;
     }
   }
   $(grid).innerHTML = h;
-  $$(grid + " .c").forEach(b => b.onclick = () => { $("#dayPick").value = b.dataset.d; renderDay(); $("#dayPick").closest("section").scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "start" }); });
+  $$(grid + " .c").forEach(b => b.onclick = () => showActuals(+b.dataset.y, +b.dataset.m));
   const unit = isRain ? "mm" : "°C", fmt = v => isRain ? Math.round(v) : v.toFixed(1);
   $(legend).innerHTML = `<span class="num">${fmt(lo)} ${unit}</span><span class="bar" style="background:linear-gradient(90deg,${[0, .25, .5, .75, 1].map(t => color(lo + t * (hi - lo)).bg).join(",")})"></span><span class="num">${fmt(hi)} ${unit}</span>`;
 }
@@ -1278,8 +1350,8 @@ function renderHeatmap(rs, key = hmKey, grid = "#heatmap", legend = "#hmLegend")
 function renderTable(ys) {
   const maxR = Math.max(...ys.map(y => y.rain));
   $("#yearTable").innerHTML = `<thead><tr><th>Year</th><th>Avg high</th><th>Avg low</th><th>Highest</th><th>Lowest</th><th>Rainfall</th><th>Rainy days</th><th>40 °C+ days</th></tr></thead><tbody>` +
-    [...ys].reverse().map(y => `<tr><td>${y.y}${y.partial ? '<span class="tag">so far</span>' : ""}</td><td>${f1(y.avgMax)}°</td><td>${f1(y.avgMin)}°</td>
-      <td title="${fmtDate(y.hi.date)}" style="color:var(--hot)">${f1(y.hi.tmax)}°</td><td title="${fmtDate(y.lo.date)}" style="color:var(--cold)">${f1(y.lo.tmin)}°</td>
+    [...ys].reverse().map(y => `<tr data-y="${y.y}" title="Tap to see ${y.y} day by day"><td>${y.y}${y.partial ? '<span class="tag">so far</span>' : ""}</td><td>${f1(y.avgMax)}°</td><td>${f1(y.avgMin)}°</td>
+      <td class="dl" data-d="${y.hi.date}" title="${fmtDate(y.hi.date)} · tap to open" style="color:var(--hot)">${f1(y.hi.tmax)}°</td><td class="dl" data-d="${y.lo.date}" title="${fmtDate(y.lo.date)} · tap to open" style="color:var(--cold)">${f1(y.lo.tmin)}°</td>
       <td>${f0(y.rain)} mm<span class="rb" style="width:${Math.max(3, y.rain / maxR * 56)}px"></span></td><td>${y.rainy}</td><td>${y.hot}</td></tr>`).join("") + "</tbody>";
 }
 
@@ -1353,7 +1425,7 @@ function renderActuals() {
     label: c => ` ${c.dataset.label}: ${f1(c.raw)} °C`
   };
   o.scales.x.ticks = { color: css("--muted"), autoSkip: true, maxTicksLimit: window.innerWidth < 600 ? 5 : 10, maxRotation: 0,
-    callback: (v, i) => { const d = rs[i]?.date; if (!d) return ""; const [y, m, dd] = d.split("-"); return n > 400 ? `${MON[+m - 1]} ${y}` : `${+dd} ${MON[+m - 1]}`; } };
+    callback: (v, i) => { const d = rs[i]?.date; if (!d) return ""; const [y, m, dd] = d.split("-"); return n > 400 || (!axSpan && axY === "all" && axM !== "all") ? `${MON[+m - 1]} ${y}` : `${+dd} ${MON[+m - 1]}`; } };
   o.scales.y.grace = "8%";
   o.onClick = (e, els) => { if (!els.length) return; const r = rs[els[0].index]; $("#dayPick").value = r.date; renderDay(); };
   charts.ax = new Chart($("#axChart"), {
@@ -1539,19 +1611,143 @@ function renderForecast() {
   const d = fcData?.daily;
   if (!d && fcLoading) return;
   if (!d) { $("#forecast").innerHTML = `<div class="muted" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:center">The forecast couldn't load. <button class="chip" type="button" id="retryFc">Try again</button><small style="width:100%;color:var(--faint)">${esc(fcErr)}</small></div>`; const b = $("#retryFc"); if (b) b.onclick = () => loadForecast(); return; }
-  $("#fcNote").textContent = `Each day's forecast high compared with the ${normYears()}-year average for that time of year. Forecast from ${fcSource}${d.time.length < 7 ? ` (${d.time.length} days available)` : ""}.${fcModels ? ` The range under each day shows how far ${fcModels.used.length} forecast models (${fcModels.used.join(", ")}) disagree. Other weather sites use one of these or their own model.` : ""}`;
+  $("#fcNote").textContent = `Each day's forecast high compared with the ${normYears()}-year average for that time of year. Tap a day for its hourly forecast. Forecast from ${fcSource}${d.time.length < 7 ? ` (${d.time.length} days available)` : ""}.${fcModels ? ` The range under each day shows how far ${fcModels.used.length} forecast models (${fcModels.used.join(", ")}) disagree. Other weather sites use one of these or their own model.` : ""}`;
   $("#forecast").innerHTML = d.time.map((t, i) => {
     const n = rows.length ? normalFor(t.slice(5)) : null, dv = n ? d.temperature_2m_max[i] - n.tmax : null;
     const cls = dv == null ? "" : Math.abs(dv) < 1 ? "flat" : dv > 0 ? "up" : "down";
     const dn = i === 0 ? "Today" : new Date(t + "T12:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric" });
     const pp = d.precipitation_probability_max?.[i];
-    return `<div class="fd"><span class="dn">${dn}</span>${icon(d.weather_code[i])}<span class="w">${WMO[d.weather_code[i]] || ""}</span>
+    return `<div class="fd" role="button" tabindex="0" data-i="${i}" aria-label="Hourly details for ${dn}"><span class="dn">${dn}</span>${icon(d.weather_code[i])}<span class="w">${WMO[d.weather_code[i]] || ""}</span>
       <span class="tt"><b>${Math.round(d.temperature_2m_max[i])}°</b> / <em>${Math.round(d.temperature_2m_min[i])}°</em></span>
       ${dv != null ? `<span class="delta ${cls}">${cls === "flat" ? "≈ normal" : (dv > 0 ? "+" : "−") + Math.abs(dv).toFixed(1) + "° vs normal"}</span>` : ""}
       <span class="r">${f1(d.precipitation_sum[i])} mm${pp != null ? ` · ${pp}% chance` : ""}</span>
-      ${fcModels?.lo[i] ? `<span class="spread" title="Range across ${fcModels.used.join(", ")}"><span class="sl">Models range</span>↑ ${Math.round(fcModels.hi[i][0])} to ${Math.round(fcModels.hi[i][1])}°<br>↓ ${Math.round(fcModels.lo[i][0])} to ${Math.round(fcModels.lo[i][1])}°</span>` : ""}</div>`;
+      ${fcModels?.lo[i] ? `<span class="spread" title="Range across ${fcModels.used.join(", ")}"><span class="sl">Models range</span>↑ ${Math.round(fcModels.hi[i][0])} to ${Math.round(fcModels.hi[i][1])}°<br>↓ ${Math.round(fcModels.lo[i][0])} to ${Math.round(fcModels.lo[i][1])}°</span>` : ""}<span class="more">Hourly ›</span></div>`;
   }).join("");
+  $$("#forecast .fd").forEach(c => { const go = () => openDay(+c.dataset.i); c.onclick = go; c.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; });
 }
+
+
+/* ================= navigation: every summary links to its detail ================= */
+function goSection(sel) {
+  const el = typeof sel === "string" ? $(sel) : sel; if (!el) return;
+  el.scrollIntoView({ behavior: RM ? "auto" : "smooth", block: "start" });
+  el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+}
+function showActuals(y, m) {
+  axSpan = null; axY = y == null ? "all" : String(y); axM = m == null ? "all" : String(m);
+  renderActuals(); goSection("#actuals");
+}
+function showDay(date) {
+  if (!date) return;
+  $("#dayPick").value = date; renderDay(); goSection("#lookup");
+}
+const activate = (el, fn) => { el.addEventListener("click", fn); el.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === el) { e.preventDefault(); fn(e); } }); };
+function runGo(go) {
+  const [kind, v] = go.split(":");
+  if (kind === "day") showDay(stat[v]?.date);
+  else if (kind === "sec") goSection(v);
+  else if (kind === "y") showActuals(+v);
+}
+$$(".stat[data-go]").forEach(c => activate(c, e => { const tr = e.target.closest(".tr[data-d]"); if (tr) showDay(tr.dataset.d); else runGo(c.dataset.go); }));
+$("#insights").addEventListener("click", e => { const y = e.target.closest(".yr"); if (y) { showActuals(+y.dataset.y); return; } const c = e.target.closest(".ins[data-go]"); if (c) runGo(c.dataset.go); });
+$("#insights").addEventListener("keydown", e => { const c = e.target.closest(".ins[data-go]"); if (c && (e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); runGo(c.dataset.go); } });
+$("#stripeRead").addEventListener("click", e => { const b = e.target.closest("[data-y]"); if (b) showActuals(+b.dataset.y); });
+$("#yearTable").addEventListener("click", e => { const td = e.target.closest("td[data-d]"); if (td) { showDay(td.dataset.d); return; } const tr = e.target.closest("tr[data-y]"); if (tr) showActuals(+tr.dataset.y); });
+activate($("#nowCard"), () => openDay(0));
+
+/* ================= day detail: hourly forecast ================= */
+let hourly = null, hourlyKey = "", ddIdx = 0;
+async function loadHourly() {
+  const k = keyOf(place.lat, place.lon) + "|" + TODAY;
+  if (hourly && hourlyKey === k) return hourly;
+  const u = `https://api.open-meteo.com/v1/forecast?latitude=${(+place.lat).toFixed(4)}&longitude=${(+place.lon).toFixed(4)}&timezone=${encodeURIComponent(TZ)}&forecast_days=7` +
+    "&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_gusts_10m,relative_humidity_2m,is_day" +
+    "&daily=sunrise,sunset,uv_index_max,wind_speed_10m_max,precipitation_hours";
+  hourly = await getJSON(u, 15000); hourlyKey = k; return hourly;
+}
+function nightIcon(code) {
+  const moon = `<path d="M21 17.5A8 8 0 1 1 13.5 7a6.3 6.3 0 0 0 7.5 10.5Z" fill="var(--muted)" opacity=".85"/>`;
+  if (code <= 1) return `<svg viewBox="0 0 34 34" aria-hidden="true">${moon}</svg>`;
+  if (code === 2) return `<svg viewBox="0 0 34 34" aria-hidden="true"><g transform="translate(-3 -4) scale(.85)">${moon}</g><path d="M10 23h13a5 5 0 0 0 .6-10 7 7 0 0 0-13.3 2A4 4 0 0 0 10 23Z" fill="var(--glass-strong)" stroke="var(--muted)" stroke-width="1.6"/></svg>`;
+  return icon(code);
+}
+const hLabel = t => { const h = +t.slice(11, 13); return h === 0 ? "12 AM" : h < 12 ? `${h} AM` : h === 12 ? "12 PM" : `${h - 12} PM`; };
+const tm = t => { const [h, m] = t.slice(11, 16).split(":").map(Number); return `${h % 12 || 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`; };
+async function openDay(i) {
+  const d = fcData?.daily; if (!d) return;
+  ddIdx = Math.max(0, Math.min(d.time.length - 1, i));
+  $("#dayBack").hidden = false; document.body.style.overflow = "hidden";
+  renderDaySummary();
+  $("#ddMsg").hidden = false; $("#ddMsg").textContent = "Loading the hourly forecast…"; $("#ddHours").innerHTML = "";
+  charts.ddT?.destroy(); charts.ddR?.destroy();
+  try { await loadHourly(); renderHours(); }
+  catch (e) { $("#ddMsg").textContent = "The hourly forecast couldn't load right now. The daily summary above is still current."; }
+}
+function closeDay() { $("#dayBack").hidden = true; document.body.style.overflow = ""; }
+function renderDaySummary() {
+  const d = fcData.daily, i = ddIdx, t = d.time[i];
+  const dn = new Date(t + "T12:00:00").toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long" });
+  $("#ddTitle").textContent = (i === 0 ? "Today, " : i === 1 ? "Tomorrow, " : "") + dn;
+  $("#ddSub").textContent = `${place.name}${place.admin ? " · " + place.admin : ""}`;
+  $("#ddPrev").disabled = i === 0; $("#ddNext").disabled = i === d.time.length - 1;
+  const n = rows.length ? normalFor(t.slice(5)) : null, dv = n ? d.temperature_2m_max[i] - n.tmax : null;
+  const pp = d.precipitation_probability_max?.[i], hd = hourly?.daily, hi = hd ? hd.time.indexOf(t) : -1;
+  const facts = [
+    ["Rain", `${f1(d.precipitation_sum[i])} mm${pp != null ? ` · ${pp}%` : ""}`],
+    n ? ["Normal for this week", `${f1(n.tmax)}° / ${f1(n.tmin)}°`] : null,
+    fcModels?.lo[i] ? ["Models range", `↑ ${Math.round(fcModels.hi[i][0])}–${Math.round(fcModels.hi[i][1])}° · ↓ ${Math.round(fcModels.lo[i][0])}–${Math.round(fcModels.lo[i][1])}°`] : null,
+    hi >= 0 ? ["Sunrise · sunset", `${tm(hd.sunrise[hi])} · ${tm(hd.sunset[hi])}`] : null,
+    hi >= 0 && hd.uv_index_max?.[hi] != null ? ["UV index max", `${f1(hd.uv_index_max[hi])}`] : null,
+    hi >= 0 && hd.wind_speed_10m_max?.[hi] != null ? ["Max wind", `${f0(hd.wind_speed_10m_max[hi])} km/h`] : null
+  ].filter(Boolean);
+  $("#ddSum").innerHTML = `<span class="ic">${icon(d.weather_code[i])}</span>
+    <div><div class="big"><b>${Math.round(d.temperature_2m_max[i])}°</b> / <em>${Math.round(d.temperature_2m_min[i])}°</em></div>
+    <div>${WMO[d.weather_code[i]] || ""}${dv != null ? ` · <b style="color:${dv >= 0 ? "var(--hot)" : "var(--cold)"}">${Math.abs(dv).toFixed(1)}° ${dv >= 0 ? "above" : "below"} normal</b>` : ""}</div></div>
+    <div class="dd-facts">${facts.map(([a, b]) => `<div><span>${a}</span><b>${b}</b></div>`).join("")}</div>`;
+  // same calendar date in past years
+  const md = t.slice(5), same = rows.filter(x => x.md === md).sort((a, b) => b.y - a.y);
+  $("#ddPastT").textContent = same.length ? `${new Date(t + "T12:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })} in past years · actual low → high` : "";
+  if (same.length) {
+    const lo = Math.min(...same.map(x => x.tmin), d.temperature_2m_min[i]) - 1, hi2 = Math.max(...same.map(x => x.tmax), d.temperature_2m_max[i]) + 1, sp = hi2 - lo;
+    const row = (lab, a, b, rain, date, cls = "") => `<div class="bar-row ${cls}"${date ? ` data-d="${date}" role="button" tabindex="0"` : ""}><span class="y">${lab}</span><span class="bar-track"><span class="bar-fill" style="left:${(a - lo) / sp * 100}%;right:${100 - (b - lo) / sp * 100}%"></span></span><span class="r">${rain}</span></div>`;
+    $("#ddPast").innerHTML = row(i === 0 ? "Today" : "Fcst", d.temperature_2m_min[i], d.temperature_2m_max[i], f1(d.precipitation_sum[i]) + " mm", null, "on") +
+      same.map(x => row(x.y, x.tmin, x.tmax, x.rain >= .1 ? f1(x.rain) + " mm" : "dry", x.date)).join("");
+    $$("#ddPast .bar-row[data-d]").forEach(b => activate(b, () => { closeDay(); showDay(b.dataset.d); }));
+  } else $("#ddPast").innerHTML = "";
+}
+function renderHours() {
+  const H = hourly.hourly, day = fcData.daily.time[ddIdx];
+  const idx = H.time.map((t, k) => t.startsWith(day) ? k : -1).filter(k => k >= 0);
+  if (!idx.length) { $("#ddMsg").textContent = "No hourly data for this day."; return; }
+  $("#ddMsg").hidden = true;
+  renderDaySummary();
+  const nowH = new Date().toLocaleString("sv-SE", { timeZone: TZ }).slice(0, 13).replace(" ", "T");
+  const L = idx.map(k => hLabel(H.time[k])), hot = css("--hot"), cold = css("--cold"), rain = css("--rain");
+  const nowK = idx.findIndex(k => H.time[k].slice(0, 13) === nowH);
+  const o = tempOpts(); o.animation = RM ? false : { duration: 500 };
+  o.scales.x.ticks = { color: css("--muted"), maxTicksLimit: innerWidth < 600 ? 5 : 8, maxRotation: 0 };
+  o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${f1(c.raw)} °C` };
+  charts.ddT?.destroy(); charts.ddR?.destroy();
+  charts.ddT = new Chart($("#ddTemp"), { type: "line", data: { labels: L, datasets: [
+    { label: "Temperature", data: idx.map(k => H.temperature_2m[k]), borderColor: hot, backgroundColor: vgrad(hot, .18, .01), fill: true, tension: .35, borderWidth: 2.5, pointRadius: c => c.dataIndex === nowK ? 5 : 0, pointBackgroundColor: hot },
+    { label: "Feels like", data: idx.map(k => H.apparent_temperature[k]), borderColor: rgba(cold, .8), backgroundColor: cold, borderDash: [5, 4], tension: .35, borderWidth: 1.8, pointRadius: 0 }
+  ] }, options: o });
+  const r = rainOpts(); r.animation = o.animation; r.scales.x = { ...o.scales.x }; r.scales.y.max = 100; r.scales.y.ticks.callback = v => v + "%";
+  r.plugins.tooltip.callbacks = { label: c => ` Chance of rain: ${c.raw ?? 0}% · ${f1(H.precipitation[idx[c.dataIndex]])} mm` };
+  charts.ddR = new Chart($("#ddRain"), { type: "bar", data: { labels: L, datasets: [{ label: "Chance of rain", data: idx.map(k => H.precipitation_probability?.[k] ?? 0), backgroundColor: idx.map(k => rgba(rain, .25 + .6 * ((H.precipitation_probability?.[k] ?? 0) / 100))), borderRadius: 4 }] }, options: r });
+  $("#ddHours").innerHTML = idx.map((k, j) => `<div class="${j === nowK ? "now" : ""}"><span class="h">${j === nowK ? "Now" : L[j]}</span>${H.is_day?.[k] === 0 ? nightIcon(H.weather_code[k]) : icon(H.weather_code[k])}<span class="tp">${Math.round(H.temperature_2m[k])}°</span><span class="pp">${H.precipitation_probability?.[k] ?? 0}%</span><span class="wd">${f0(H.wind_speed_10m[k])} km/h</span></div>`).join("");
+  const nowEl = $("#ddHours .now"); if (nowEl) $("#ddHours").scrollLeft = Math.max(0, nowEl.offsetLeft - 8);
+}
+$("#ddClose").addEventListener("click", closeDay);
+$("#dayBack").addEventListener("click", e => { if (e.target.id === "dayBack") closeDay(); });
+$("#ddPrev").addEventListener("click", () => openDay(ddIdx - 1));
+$("#ddNext").addEventListener("click", () => openDay(ddIdx + 1));
+addEventListener("keydown", e => {
+  if ($("#dayBack").hidden) return;
+  if (e.key === "Escape") closeDay();
+  if (e.key === "ArrowLeft" && ddIdx > 0) openDay(ddIdx - 1);
+  if (e.key === "ArrowRight" && ddIdx < (fcData?.daily?.time.length || 1) - 1) openDay(ddIdx + 1);
+});
 
 /* ================= scroll reveal (content is visible from the start; this only adds a lift) ================= */
 if ("IntersectionObserver" in window && !RM) {
