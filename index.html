@@ -147,7 +147,7 @@ button{cursor:pointer}
 @media (max-width:560px){.chart-box{height:250px}}
 
 /* heatmap */
-.hm-scroll{overflow-x:auto;margin-inline:-4px;padding:4px}
+.hm-scroll{overflow-x:auto;margin:-8px -8px;padding:8px}
 .hm{display:grid;grid-template-columns:44px repeat(12,minmax(38px,1fr));gap:4px;min-width:560px;font-family:var(--f-mono);font-size:.74rem}
 .hm .h{color:var(--muted);text-align:center;padding-bottom:2px;font-weight:500}
 .hm .y{color:var(--muted);text-align:right;padding-right:6px;align-self:center}
@@ -295,7 +295,7 @@ h3{font-family:var(--f-display);font-size:1.1rem;font-weight:600;margin:0}
 .bar-row .r{font-family:var(--f-mono);text-align:right;color:var(--rain)}
 
 /* forecast */
-.fc{display:grid;grid-template-columns:repeat(7,minmax(118px,1fr));gap:10px;overflow-x:auto;padding-bottom:4px;scroll-snap-type:x mandatory}
+.fc{display:grid;grid-template-columns:repeat(7,minmax(118px,1fr));gap:10px;overflow-x:auto;padding:10px 4px 8px;margin:-10px -4px -4px;scroll-snap-type:x mandatory;scroll-padding-inline:4px}
 .fd{scroll-snap-align:start;background:var(--bg2);border-radius:var(--r-md);padding:14px 12px;display:flex;flex-direction:column;gap:6px;transition:transform .25s}
 .fd:hover{transform:translateY(-4px)}
 .fd .dn{font-weight:600;font-size:.9rem}
