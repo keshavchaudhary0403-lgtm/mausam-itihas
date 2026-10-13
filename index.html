@@ -427,7 +427,7 @@ footer a{color:inherit}
 
       <section class="card section reveal pre" id="actuals">
         <div class="card-h">
-          <div><h2>Daily actuals <span class="badge solid">Actual readings</span></h2><p>Recorded high, low and rainfall for every day, with no averaging. Shows the last 12 months; pick any year or month back to <span id="axFrom"></span>.</p></div>
+          <div><h2>Daily actuals <span class="badge solid">Actual readings</span></h2><p>Recorded high, low and rainfall for every day, with no averaging. Shows the last 12 months by default. Switch to 5, 10 or 15 years, or pick any year and month back to <span id="axFrom"></span>.</p></div>
         </div>
         <div class="ax-bar">
           <button class="ax-step" type="button" id="axPrev" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg><span>Previous</span></button>
@@ -437,6 +437,9 @@ footer a{color:inherit}
           <span class="ax-quick">
             <button class="chip" type="button" data-ax="30">Last 30 days</button>
             <button class="chip" type="button" data-ax="365">Last 12 months</button>
+            <button class="chip" type="button" data-ax="1826" data-yrs="5">5 years</button>
+            <button class="chip" type="button" data-ax="3652" data-yrs="10">10 years</button>
+            <button class="chip" type="button" data-ax="5479" data-yrs="15">15 years</button>
           </span>
         </div>
         <div class="ax-sum" id="axSum"></div>
@@ -618,7 +621,7 @@ function setSkyFromTemp(t, code) {
 function readURL() {
   const p = new URLSearchParams(location.search);
   if (p.get("lat") && p.get("lon")) place = { name: p.get("name") || "Selected place", admin: p.get("admin") || "", lat: +p.get("lat"), lon: +p.get("lon"), elev: p.get("elev") ? +p.get("elev") : null };
-  if (["5","10","15"].includes(p.get("y"))) years = +p.get("y");
+  if (["5","10","15"].includes(p.get("y"))) { years = +p.get("y"); axSpan = { 5: 1826, 10: 3652, 15: 5479 }[years]; }
 }
 function writeURL() {
   try {
@@ -1120,7 +1123,10 @@ async function load() {
   document.title = `${place.name} · Mausam Itihas`;
   rows = []; $("#main").hidden = true;            // never show the previous place's numbers
   loadForecast();
-  if (await fetchHistory()) render();
+  if (await fetchHistory()) {
+    if (axSpan > 365 && rows[0].y > END_Y - years) { try { await loadYear(END_Y - years, END_Y); } catch (e) { axSpan = 365; years = 1; } }
+    render();
+  }
 }
 
 /* ================= render ================= */
@@ -1172,10 +1178,11 @@ function axRows() {
   if (axSpan) { const from = addDays(rows[rows.length - 1].date, -axSpan + 1); return rows.filter(r => r.date >= from); }
   return rows.filter(r => r.y === +axY && (axM === "all" || r.m === +axM));
 }
+const SPAN_LABEL = { 30: "Last 30 days", 365: "Last 12 months", 1826: "Last 5 years", 3652: "Last 10 years", 5479: "Last 15 years" };
 function syncAxSelects() {
   const yrs = Array.from({ length: END_Y - OLDEST_Y + 1 }, (_, k) => END_Y - k);
   $("#axFrom").textContent = OLDEST_Y;
-  $("#axYear").innerHTML = (axSpan ? `<option value="span">${axSpan === 30 ? "Last 30 days" : "Last 12 months"}</option>` : "") + yrs.map(y => `<option value="${y}">${y}</option>`).join("");
+  $("#axYear").innerHTML = (axSpan ? `<option value="span">${SPAN_LABEL[axSpan] || "Recent"}</option>` : "") + yrs.map(y => `<option value="${y}">${y}</option>`).join("");
   $("#axMonth").innerHTML = `<option value="all">All months</option>` + MON.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
   $("#axYear").value = axSpan ? "span" : axY; $("#axMonth").value = axSpan ? "all" : axM;
   const stepOK = !axSpan, unit = axM === "all" ? "year" : "month";
@@ -1192,13 +1199,14 @@ async function showYear() {
   if (!axSpan && !rows.some(r => r.y === +axY)) await loadYear(+axY);
   renderActuals();
 }
-async function loadYear(y) {
+async function loadYear(y, to = y) {
   const p = place, tok = loadToken;
   syncAxSelects();
   charts.ax?.destroy(); charts.axR?.destroy(); $("#axCap").textContent = "";
-  $("#axSum").innerHTML = `<div style="grid-column:1/-1"><span>Loading ${y}</span><small>Fetching that year's daily readings…</small></div>`;
+  const label = y === to ? String(y) : `${to - y + 1} years`;
+  $("#axSum").innerHTML = `<div style="grid-column:1/-1"><span>Loading ${label}</span><small id="axLoadMsg">Fetching daily readings…</small></div>`;
   try {
-    const r = await ensureArchive(p, y, sec => withCountdown(sec, tok), () => {}, y);
+    const r = await ensureArchive(p, y, sec => withCountdown(sec, tok), (done, total) => { const m = $("#axLoadMsg"); if (m && total > 1) m.textContent = `Fetched ${done} of ${total} years…`; }, to);
     if (p !== place) return;
     rows = withRecent(r, await recentDays(p));
     $("#status").hidden = true;
@@ -1218,7 +1226,7 @@ function axStep(dir) {
 }
 $("#axYear").addEventListener("change", e => {
   if (e.target.value === "span") return;
-  axSpan = null; axY = e.target.value; showYear().catch(() => {});
+  axSpan = null; years = 1; writeURL(); axY = e.target.value; showYear().catch(() => {});
 });
 $("#axMonth").addEventListener("change", e => {
   if (axSpan) { axSpan = null; axY = String(END_Y); }
@@ -1226,7 +1234,12 @@ $("#axMonth").addEventListener("change", e => {
 });
 $("#axPrev").addEventListener("click", () => axStep(-1));
 $("#axNext").addEventListener("click", () => axStep(1));
-$$(".ax-quick .chip").forEach(c => c.addEventListener("click", () => { axSpan = +c.dataset.ax; axM = "all"; renderActuals(); }));
+$$(".ax-quick .chip").forEach(c => c.addEventListener("click", async () => {
+  axSpan = +c.dataset.ax; axM = "all";
+  const n = +c.dataset.yrs || 0, from = END_Y - n; years = n || 1;
+  if (n && !(rows.length && rows[0].y <= from)) { try { await loadYear(from, END_Y); } catch (e) { return; } }
+  writeURL(); renderActuals();
+}));
 
 function renderActuals() {
   if (!rows.length) return;
