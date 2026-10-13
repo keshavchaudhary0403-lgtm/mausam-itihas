@@ -16,7 +16,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <style>
-/* Layout: glass nav → hero (place + live sky) → insight chips → bento of records + climate stripes → charts → heatmap → date explorer → forecast vs normal → table */
+/* Layout: glass nav → hero (place + now) → next 7 days (tap for hourly) → daily actuals: temperature and rainfall. Was: forecast vs normal → table */
 :root{
   --bg:#f3f5fb; --bg2:#e9edf7; --glass:rgba(255,255,255,.66); --glass-strong:rgba(255,255,255,.88);
   --ink:#0f1726; --muted:#5d6a80; --faint:#8b97aa; --line:rgba(15,23,38,.09); --line-strong:rgba(15,23,38,.16);
@@ -405,77 +405,29 @@ footer a{color:inherit}
   <div class="wrap">
     <header class="hero">
       <div>
-        <span class="eyebrow"><span class="live"></span><span id="eyebrow">Weather history · India</span></span>
+        <span class="eyebrow"><span class="live"></span><span id="eyebrow">Weather · India</span></span>
         <h1 class="place-name" id="placeName">New Delhi</h1>
         <div class="place-meta" id="placeMeta"></div>
-        <div class="controls">
-          <div class="seg" id="rangeSeg" role="group" aria-label="History length">
-            <span class="pill"></span>
-            <button type="button" data-n="5">5 years</button>
-            <button type="button" data-n="10" aria-pressed="true">10 years</button>
-            <button type="button" data-n="15">15 years</button>
-          </div>
-          <span class="range-note" id="rangeNote"></span>
-        </div>
       </div>
       <div class="now-card clickable" id="nowCard" role="button" tabindex="0" aria-label="Open today's hourly forecast">
         <div class="now-t num" id="nowT">–<sup>°C</sup></div>
         <div class="now-c" id="nowC">Loading current weather</div>
         <div class="now-s" id="nowS"></div>
-        <div class="now-norm" id="nowNorm" hidden></div>
         <div class="now-more">Hourly forecast <span>›</span></div>
       </div>
     </header>
 
-    <div class="status" id="status"><span class="spinner"></span><span id="statusTxt">Loading weather history…</span></div>
+    <div class="status" id="status"><span class="spinner"></span><span id="statusTxt">Loading weather…</span></div>
 
     <main id="main" class="loading">
-      <div class="insights" id="insights" aria-label="Highlights"></div>
-
-      <div class="bento" id="bento">
-        <div class="card stat clickable" data-go="day:hi" role="button" tabindex="0" style="--glow:var(--hot)"><span class="lab"><i style="background:var(--hot)"></i>Hottest day</span><span class="val" data-k="hi">–</span><span class="sub" data-s="hi"></span><div class="top3" data-t="hi"></div></div>
-        <div class="card stat clickable" data-go="day:lo" role="button" tabindex="0" style="--glow:var(--cold)"><span class="lab"><i style="background:var(--cold)"></i>Coldest night</span><span class="val" data-k="lo">–</span><span class="sub" data-s="lo"></span><div class="top3" data-t="lo"></div></div>
-        <div class="card wide reveal pre" id="stripesCard">
-          <div class="card-h" style="margin-bottom:6px"><div><h2>Warming stripes</h2><p>One stripe per year, coloured by how warm it was compared with the average of this range. Tap or hover a stripe.</p></div></div>
-          <div class="stripes" id="stripes"></div>
-          <div class="stripes-meta"><span id="sFirst"></span><span id="sLast"></span></div>
-          <div class="stripe-read" id="stripeRead"></div>
-        </div>
-        <div class="card stat clickable" data-go="day:wet" role="button" tabindex="0" style="--glow:var(--rain)"><span class="lab"><i style="background:var(--rain)"></i>Wettest day</span><span class="val" data-k="wet">–</span><span class="sub" data-s="wet"></span></div>
-        <div class="card stat clickable" data-go="sec:#summary" role="button" tabindex="0" style="--glow:var(--rain)"><span class="lab"><i style="background:var(--rain)"></i>Rain in a year</span><span class="val" data-k="avgRain">–</span><span class="sub" data-s="avgRain"></span></div>
-        <div class="card stat clickable" data-go="sec:#summary" role="button" tabindex="0" style="--glow:var(--warm)"><span class="lab"><i style="background:var(--warm)"></i>Days at 40 °C+</span><span class="val" data-k="hot">–</span><span class="sub" data-s="hot"></span></div>
-        <div class="card stat clickable" data-go="sec:#yearSec" role="button" tabindex="0" style="--glow:var(--accent)"><span class="lab"><i style="background:var(--accent)"></i>Warming trend</span><span class="val" data-k="trend">–</span><span class="sub" data-s="trend"></span></div>
-      </div>
-
-      <div class="two section">
-        <section id="yearSec" class="card reveal pre">
-          <div class="card-h"><div><h2>Year by year <span class="badge">Averages</span></h2><p>Averages only: the average daily high and low for each year, with total rainfall as bars. For actual day-by-day readings, see Daily actuals below.</p></div></div>
-          <div class="chart-box"><canvas id="yearChart"></canvas></div>
-        </section>
-        <section id="monthSec" class="card reveal pre">
-          <div class="card-h"><div><h2>A typical year <span class="badge">Averages</span></h2><p>Monthly averages: when the heat peaks and when the monsoon arrives.</p></div></div>
-          <div class="chart-box"><canvas id="monthChart"></canvas></div>
-        </section>
-      </div>
-
-      <section class="card section reveal pre">
-        <div class="card-h">
-          <div><h2>Every month, every year <span class="badge">Averages</span></h2><p>Averages only: each tile is one month’s average. Read across to compare the same month over the years. Tap a tile to see that month day by day.</p></div>
-          <div class="seg small" id="hmSeg" role="group" aria-label="Heatmap measure">
-            <span class="pill"></span>
-            <button type="button" data-k="tmax" aria-pressed="true">Avg high</button>
-            <button type="button" data-k="tmin">Avg low</button>
-            <button type="button" data-k="rain">Rainfall</button>
-          </div>
-        </div>
-        <div class="hm-scroll"><div class="hm" id="heatmap"></div></div>
-        <div class="legend" id="hmLegend"></div>
+      <section id="fcSec" class="card section reveal pre">
+        <div class="card-h"><div><h2>Next 7 days</h2><p id="fcNote">Tap a day for its hour-by-hour forecast.</p></div></div>
+        <div class="fc" id="forecast"></div>
       </section>
-
 
       <section class="card section reveal pre" id="actuals">
         <div class="card-h">
-          <div><h2>Daily actuals <span class="badge solid">Actual readings</span></h2><p>Every single day’s recorded high, low and rainfall, with no averaging. Pick a year and month, or view the whole range. Tap the chart to open that day.</p></div>
+          <div><h2>Daily actuals <span class="badge solid">Actual readings</span></h2><p>Recorded high, low and rainfall for every day, with no averaging. Shows the last 12 months; pick any year or month back to <span id="axFrom"></span>.</p></div>
         </div>
         <div class="ax-bar">
           <button class="ax-step" type="button" id="axPrev" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 6-6 6 6 6"/></svg><span>Previous</span></button>
@@ -485,45 +437,12 @@ footer a{color:inherit}
           <span class="ax-quick">
             <button class="chip" type="button" data-ax="30">Last 30 days</button>
             <button class="chip" type="button" data-ax="365">Last 12 months</button>
-            <button class="chip" type="button" data-ax="all">Everything</button>
           </span>
         </div>
         <div class="ax-sum" id="axSum"></div>
         <div class="sub-lab"><i style="background:var(--hot)"></i>Temperature (°C), actual daily high and low</div><div class="chart-box big"><canvas id="axChart"></canvas></div>
         <div class="sub-lab"><i style="background:var(--rain)"></i>Rainfall (mm), actual daily total</div><div class="chart-box rain big-rain"><canvas id="axRain"></canvas></div>
         <p class="muted" id="axCap" style="font-size:.82rem;margin:8px 0 0"></p>
-      </section>
-      <section id="lookup" class="card section reveal pre">
-        <div class="card-h"><div><h2>Look up a date</h2><p>Any day in the selected range, and the same date in every other year. Tap a year to jump to it.</p></div></div>
-        <div class="dx">
-          <div>
-            <div class="dx-pick">
-              <input type="date" id="dayPick" aria-label="Pick a date">
-              <button class="chip" type="button" data-q="lastyear">Today, last year</button>
-              <button class="chip" type="button" data-q="hottest">Hottest day</button>
-              <button class="chip" type="button" data-q="wettest">Wettest day</button>
-            </div>
-            <div class="day-big" id="dayBig"></div>
-            <div class="day-extra" id="dayExtra"></div>
-          </div>
-          <div>
-            <div class="eyebrow" id="sameTitle" style="margin-bottom:10px"></div>
-            <div class="bars" id="sameBars"></div>
-          </div>
-        </div>
-      </section>
-
-      <section id="fcSec" class="card section reveal pre">
-        <div class="card-h"><div><h2>Next 7 days vs normal</h2><p id="fcNote">Each day's forecast high compared with the average for that time of year.</p></div></div>
-        <div class="fc" id="forecast"></div>
-      </section>
-
-      <section id="summary" class="card section reveal pre">
-        <div class="card-h">
-          <div><h2>Yearly summary</h2><p>Rainy day uses the IMD definition of 2.5 mm or more. Hot day means a high of 40 °C or more. Tap a year to see it day by day, or a highest or lowest value to open that day.</p></div>
-          <button class="btn" id="csvBtn" type="button"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0-4-4m4 4 4-4M5 20h14"/></svg>Download CSV</button>
-        </div>
-        <div class="tbl"><table id="yearTable"></table></div>
       </section>
     </main>
 
@@ -585,10 +504,6 @@ footer a{color:inherit}
       </div>
       <div class="dd-col">
         <div class="tiles" id="ddTiles"></div>
-        <div class="tile dd-past">
-          <div class="tl"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg><span id="ddPastT">This date in past years</span></div>
-          <div class="bars" id="ddPast"></div>
-        </div>
       </div>
     </div>
   </div>
@@ -622,7 +537,8 @@ const POPULAR = [
 ];
 
 let place = { name: "New Delhi", admin: "Delhi", lat: 28.6139, lon: 77.209, elev: 216 };
-let years = 10, hmKey = "tmax", rows = [], charts = {}, current = null;
+let years = 1, rows = [], charts = {}, current = null;
+const OLDEST_Y = END_Y - 15;
 
 /* ================= theme ================= */
 const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
@@ -644,7 +560,7 @@ $("#themeBtn").addEventListener("click", e => {
   const apply = () => {
     document.documentElement.dataset.theme = next;
     try { localStorage.setItem("mi-theme", next); } catch (err) {}
-    syncThemeBtn(); if (!$("#dayBack").hidden && hourly) renderHours(); if (rows.length) { renderCharts(); renderHeatmap(currentRows()); renderActuals(); renderStripes(byYear(currentRows())); }
+    syncThemeBtn(); if (!$("#dayBack").hidden && hourly) renderHours(); if (rows.length) renderActuals();
   };
   if (document.startViewTransition && !RM) document.startViewTransition(apply); else apply();
 });
@@ -724,8 +640,6 @@ function bindSeg(seg, attr, cb) {
     movePill(seg); cb(b.dataset[attr]);
   }));
 }
-bindSeg($("#rangeSeg"), "n", v => setYears(+v));
-bindSeg($("#hmSeg"), "k", v => { hmKey = v; renderHeatmap(currentRows()); });
 const syncPills = () => $$(".seg").forEach(movePill);
 addEventListener("resize", syncPills);
 document.fonts?.ready.then(syncPills);
@@ -1051,20 +965,20 @@ function recFor(p) {
 function rowsOf(rec, from) {
   return Object.keys(rec.yrs).map(Number).filter(y => y >= from).sort((a, b) => a - b).flatMap(y => colsToRows(rec.yrs[y].c));
 }
-function missingYears(rec, from) {
+function missingYears(rec, from, to = END_Y) {
   const jobs = [];
-  for (let y = END_Y; y >= from; y--) {
+  for (let y = to; y >= from; y--) {
     const have = rec.yrs[y], last = y === END_Y ? END : `${y}-12-31`;
     if (!have) jobs.push({ y, s: `${y}-01-01`, e: last });
     else if (have.e < last) jobs.push({ y, s: addDays(have.e, 1), e: last, append: true });
   }
   return jobs;
 }
-async function ensureArchive(p, from, onWait, onProgress) {
+async function ensureArchive(p, from, onWait, onProgress, to = END_Y) {
   const [k, rec] = recFor(p);
-  const jobs = missingYears(rec, from), total = END_Y - from + 1;
+  const jobs = missingYears(rec, from, to), total = to - from + 1;
   let done = total - jobs.length;
-  onProgress(done, total, rowsOf(rec, from));
+  onProgress(done, total, rowsOf(rec, 0));
   let next = 0, fail = null;
   const worker = async () => {
     while (next < jobs.length && !fail) {
@@ -1079,16 +993,14 @@ async function ensureArchive(p, from, onWait, onProgress) {
         if (rec.el == null && j.elevation != null) rec.el = j.elevation;
         if (p.elev == null && rec.el != null) p.elev = rec.el;
         writeStore(k, rec);
-        done++; onProgress(done, total, rowsOf(rec, from));
+        done++; onProgress(done, total, rowsOf(rec, 0));
       } catch (e) { fail = e; }
     }
   };
   await Promise.all([worker(), worker(), worker()]);
   if (fail) throw fail;
-  return rowsOf(rec, from);
+  return rowsOf(rec, 0);                          // every year held for this place
 }
-const firstYear = () => END_Y - years;
-const currentRows = () => rows.filter(r => r.y >= firstYear());
 const isPartial = y => y === END_Y && END.slice(5) !== "12-31";
 
 function byYear(rs) {
@@ -1149,7 +1061,7 @@ function progress(msg, done, total) {
   s.innerHTML = `<span class="spinner"></span><span style="flex:1;min-width:0">${esc(msg)}<span class="prog"><i style="width:${pct}%"></i></span></span><span class="num muted">${done}/${total}</span>`;
 }
 let renderTimer;
-const renderSoon = () => { clearTimeout(renderTimer); renderTimer = setTimeout(() => { render(); renderForecast(); renderNowNorm(); }, 120); };
+const renderSoon = () => { clearTimeout(renderTimer); renderTimer = setTimeout(render, 120); };
 /* The ERA5 archive runs ~5 days behind. Fill the days between the archive's last day and yesterday
    from Open-Meteo's forecast API (past_days), which carries the latest weather analysis for recent days. */
 const recentCache = new Map();
@@ -1176,9 +1088,9 @@ async function fetchHistory() {
   const tok = ++loadToken, p = place;
   $("#main").classList.add("loading");
   try {
-    const r = await ensureArchive(p, firstYear(), sec => withCountdown(sec, tok), (done, total, rs) => {
+    const r = await ensureArchive(p, END_Y - 1, sec => withCountdown(sec, tok), (done, total, rs) => {
       if (tok !== loadToken) return;
-      if (done < total) progress(done ? `Loading ${p.name}: newest years first, the rest is filling in` : `Loading ${p.name}…`, done, total);
+      if (done < total) progress(`Loading the last 12 months for ${p.name}…`, done, total);
       if (rs.length) { rows = rs; $("#placeMeta").innerHTML = placeMeta(); $("#main").hidden = false; $("#main").classList.remove("loading"); renderSoon(); }
     });
     if (tok !== loadToken) return false;
@@ -1193,12 +1105,12 @@ async function fetchHistory() {
     $("#main").hidden = !partial;
     const s = $("#status"); s.hidden = false; s.className = "status err";
     const txt = e instanceof RateLimited
-      ? `Open-Meteo's free limit for your network is used up for now${partial ? `, so only ${rows[0].y}–${END_Y} loaded` : `, so ${p.name} couldn't load`}. It resets within the hour, and anything already loaded is saved on this device.`
+      ? `Open-Meteo's free limit for your network is used up for now${partial ? `, so only part of the last 12 months loaded` : `, so ${p.name} couldn't load`}. It resets within the hour, and anything already loaded is saved on this device.`
       : e instanceof TypeError
         ? "Can't reach the weather service. If you opened this inside an app preview (like the Claude app), open the file in Chrome or Safari instead. Otherwise check your internet connection."
         : (e.message || "Couldn't load the weather history. Try again in a minute.");
     s.innerHTML = `<span style="flex:1">${esc(txt)}</span><button class="chip" type="button" id="retryHist">Try again</button>`;
-    $("#retryHist").onclick = () => setYears(years);
+    $("#retryHist").onclick = () => load();
     return false;
   }
 }
@@ -1210,106 +1122,16 @@ async function load() {
   loadForecast();
   if (await fetchHistory()) render();
 }
-async function setYears(n) {
-  years = n; writeURL();
-  $$("#rangeSeg button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.n === years)); syncPills();
-  if (await fetchHistory()) { render(); renderForecast(); renderNowNorm(); }
-}
 
 /* ================= render ================= */
 function render() {
   if (!rows.length) return;
-  $$("#rangeSeg button").forEach(b => b.setAttribute("aria-pressed", +b.dataset.n === years)); syncPills();
-  const rs = currentRows(), ys = byYear(rs);
-  $("#rangeNote").textContent = `${firstYear()}–${END_Y - 1} + ${END_Y} up to ${fmtDate(rows[rows.length - 1].date)}`;
-  $("#eyebrow").textContent = `${years + 1} years · ${rs.length.toLocaleString("en-IN")} days of data`;
-  renderStats(rs, ys); renderStripes(ys); renderInsights(rs, ys); renderCharts(); renderHeatmap(rs); renderActuals(); renderTable(ys); initDay();
-  if (fcData) { renderForecast(); renderNowNorm(); }
+  renderActuals();
+  if (fcData) renderForecast();
 }
 
-function countUp(el, to, dec, suffix) {
-  const from = parseFloat(el.dataset.v || "0") || 0; el.dataset.v = to;
-  if (RM || isNaN(to)) { el.innerHTML = (isNaN(to) ? "–" : to.toFixed(dec)) + suffix; return; }
-  const t0 = performance.now(), dur = 900;
-  const step = now => {
-    const p = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - p, 3), v = from + (to - from) * e;
-    el.innerHTML = (dec ? v.toFixed(dec) : Math.round(v).toLocaleString("en-IN")) + suffix;
-    if (p < 1) requestAnimationFrame(step);
-  };
-  requestAnimationFrame(step);
-}
-let stat = {};
-function renderStats(rs, ys) {
-  let hi = rs[0], lo = rs[0], wet = rs[0];
-  for (const r of rs) { if (r.tmax > hi.tmax) hi = r; if (r.tmin < lo.tmin) lo = r; if (r.rain > wet.rain) wet = r; }
-  const full = ys.filter(y => !y.partial);
-  const avgRain = full.reduce((s, y) => s + y.rain, 0) / (full.length || 1);
-  const avgHot = full.reduce((s, y) => s + y.hot, 0) / (full.length || 1);
-  const tr = slope(full, "avgMean");
-  stat = { hi, lo, wet };
-  const top = (key, dir) => [...rs].sort((a, b) => dir * (b[key] - a[key])).slice(0, 4);
-  const draw = (k, list, key, col, label) => {
-    const vals = list.map(r => r[key]), lo2 = Math.min(...vals), hi2 = Math.max(...vals), sp = (hi2 - lo2) || 1;
-    $(`[data-t="${k}"]`).innerHTML = `<span class="tl">${label}</span>` + list.slice(1).map(r => `<div class="tr" data-d="${r.date}" role="button" tabindex="0"><span class="d">${fmtDate(r.date)}</span><b style="color:${col}">${f1(r[key])}°</b><i><span style="width:${k === "hi" ? 40 + (r[key] - lo2) / sp * 60 : 40 + (hi2 - r[key]) / sp * 60}%;background:${col}"></span></i></div>`).join("");
-  };
-  draw("hi", top("tmax", 1), "tmax", "var(--hot)", "Next hottest");
-  draw("lo", top("tmin", -1), "tmin", "var(--cold)", "Next coldest");
-  const V = (k, v, d, suf, sub) => { countUp($(`[data-k="${k}"]`), v, d, suf); $(`[data-s="${k}"]`).textContent = sub; };
-  V("hi", hi.tmax, 1, "<small>°C</small>", fmtDate(hi.date));
-  V("lo", lo.tmin, 1, "<small>°C</small>", fmtDate(lo.date));
-  V("wet", wet.rain, 0, "<small>mm</small>", fmtDate(wet.date));
-  V("avgRain", avgRain, 0, "<small>mm</small>", `average of ${full.length} full years`);
-  V("hot", avgHot, 0, "<small>days</small>", "per year, on average");
-  const tEl = $('[data-k="trend"]');
-  if (tr == null) { tEl.textContent = "–"; $('[data-s="trend"]').textContent = "needs at least 4 full years"; }
-  else { countUp(tEl, tr, 2, "<small>°C</small>"); $('[data-s="trend"]').textContent = `per decade, ${tr >= 0 ? "warming" : "cooling"} · rough with only ${full.length} years`; }
-}
 
-function divColor(t) {               // t in [-1,1] → blue … white … red (warming stripes)
-  const dark = isDark(), a = Math.min(1, Math.abs(t));
-  if (t < 0) return `hsl(214 ${60 + a * 25}% ${dark ? 62 - a * 30 : 88 - a * 52}%)`;
-  return `hsl(${10 - a * 6} ${70 + a * 20}% ${dark ? 62 - a * 28 : 88 - a * 50}%)`;
-}
-function renderStripes(ys) {
-  const full = ys.filter(y => !y.partial);
-  const mean = full.reduce((s, y) => s + y.avgMean, 0) / (full.length || 1);
-  const span = Math.max(.3, ...ys.map(y => Math.abs(y.avgMean - mean)));
-  const box = $("#stripes"); box.innerHTML = "";
-  ys.forEach((y, i) => {
-    const d = y.avgMean - mean, el = document.createElement("div");
-    el.style.background = divColor(d / span);
-    if (!RM) el.animate([{ transform: "scaleY(0)" }, { transform: "scaleY(1)" }], { duration: 500, delay: i * 35, easing: "cubic-bezier(.2,.9,.3,1.2)", fill: "backwards" });
-    const say = () => { $("#stripeRead").innerHTML = `<b class="num">${y.y}${y.partial ? " (so far)" : ""}</b> · average ${f1(y.avgMean)} °C, <b style="color:${d >= 0 ? "var(--hot)" : "var(--cold)"}">${d >= 0 ? "+" : "−"}${Math.abs(d).toFixed(2)} °C</b> vs the range average · <button type="button" class="link-btn" data-y="${y.y}">See ${y.y} day by day ›</button>`; };
-    el.addEventListener("mouseenter", say); el.addEventListener("click", () => { if (el.classList.contains("on")) showActuals(y.y); else { $$("#stripes div").forEach(x => x.classList.remove("on")); el.classList.add("on"); say(); } }); el.style.cursor = "pointer";
-    el.tabIndex = 0; el.setAttribute("aria-label", `${y.y}: ${f1(y.avgMean)} °C`); el.addEventListener("focus", say);
-    box.appendChild(el);
-  });
-  $("#sFirst").textContent = ys[0]?.y ?? ""; $("#sLast").textContent = ys.at(-1)?.y ?? "";
-  const warm = [...full].sort((a, b) => b.avgMean - a.avgMean)[0];
-  $("#stripeRead").innerHTML = warm ? `Warmest full year: <b class="num">${warm.y}</b> at ${f1(warm.avgMean)} °C average · <button type="button" class="link-btn" data-y="${warm.y}">See it day by day ›</button>` : "";
-}
 
-function renderInsights(rs, ys) {
-  const full = ys.filter(y => !y.partial), out = [];
-  if (full.length >= 2) {
-    const byT = [...full].sort((a, b) => b.avgMean - a.avgMean), byR = [...full].sort((a, b) => b.rain - a.rain);
-    const Y = y => `<button type="button" class="yr" data-y="${y}">${y}</button>`;
-    out.push(["var(--hot)", `${Y(byT[0].y)} was the warmest year in this range; ${Y(byT.at(-1).y)} the coolest.`, "y:" + byT[0].y]);
-    out.push(["var(--rain)", `${Y(byR[0].y)} was the wettest year (${f0(byR[0].rain)} mm) and ${Y(byR.at(-1).y)} the driest (${f0(byR.at(-1).rain)} mm).`, "y:" + byR[0].y]);
-    const tot = full.reduce((s, y) => s + y.rain, 0), mon = full.reduce((s, y) => s + y.mon, 0);
-    if (tot > 0) out.push(["var(--rain)", `<b>${Math.round(mon / tot * 100)}%</b> of the year's rain falls in the June–September monsoon.`, "sec:#monthSec"]);
-    const tx = slope(full, "avgMax"), tn = slope(full, "avgMin");
-    if (tx != null && tn != null && Math.abs(tn - tx) > .1) out.push(["var(--cold)", tn > tx ? `Nights are warming faster than days (${tn >= 0 ? "+" : ""}${tn.toFixed(2)} vs ${tx >= 0 ? "+" : ""}${tx.toFixed(2)} °C per decade).` : `Days are warming faster than nights (${tx >= 0 ? "+" : ""}${tx.toFixed(2)} vs ${tn >= 0 ? "+" : ""}${tn.toFixed(2)} °C per decade).`, "sec:#yearSec"]);
-  }
-  const ytd = rs.filter(r => r.y === END_Y), endD = doy(END.slice(5));
-  if (ytd.length > 30) {
-    const past = rs.filter(r => r.y < END_Y && r.doy <= endD);
-    const a = ytd.reduce((s, r) => s + r.tmean, 0) / ytd.length, b = past.reduce((s, r) => s + r.tmean, 0) / (past.length || 1);
-    const d = a - b;
-    out.push([d >= 0 ? "var(--warm)" : "var(--cold)", `${END_Y} so far is <b>${Math.abs(d).toFixed(1)} °C ${d >= 0 ? "warmer" : "cooler"}</b> than the same stretch in earlier years.`, "y:" + END_Y]);
-  }
-  $("#insights").innerHTML = out.map(([c, t, go]) => `<div class="ins${go ? " go" : ""}"${go ? ` data-go="${go}" role="button" tabindex="0"` : ""}><i style="background:${c}"></i><span>${t}</span></div>`).join("");
-}
 
 function chartBase() {
   const ink = css("--muted"), grid = rgba(css("--ink"), .07);
@@ -1340,132 +1162,87 @@ const vgrad = (col, a1, a2) => ctx => {
   const { chart } = ctx, ca = chart.chartArea; if (!ca) return rgba(col, a1);
   const g = chart.ctx.createLinearGradient(0, ca.top, 0, ca.bottom); g.addColorStop(0, rgba(col, a1)); g.addColorStop(1, rgba(col, a2)); return g;
 };
-function renderCharts() {
-  const rs = currentRows(), ys = byYear(rs);
-  const hot = css("--hot"), cold = css("--cold"), rain = css("--rain");
-  charts.year?.destroy(); charts.month?.destroy();
-  charts.year = new Chart($("#yearChart"), {
-    data: {
-      labels: ys.map(y => y.partial ? `${y.y}*` : String(y.y)),
-      datasets: [
-        { type: "line", label: "Avg high", data: ys.map(y => +y.avgMax.toFixed(1)), borderColor: hot, backgroundColor: hot, tension: .35, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6, yAxisID: "y" },
-        { type: "line", label: "Avg low", data: ys.map(y => +y.avgMin.toFixed(1)), borderColor: cold, backgroundColor: cold, tension: .35, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6, yAxisID: "y" },
-        { type: "bar", label: "Rainfall", data: ys.map(y => Math.round(y.rain)), backgroundColor: vgrad(rain, .55, .08), hoverBackgroundColor: rgba(rain, .7), borderRadius: 8, borderSkipped: false, yAxisID: "y2" }
-      ]
-    },
-    options: (() => { const o = chartBase(); o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.raw}${c.dataset.type === "bar" ? " mm" : " °C"}`, footer: it => (it[0]?.label.endsWith("*") ? "* year so far\n" : "") + "Tap to see every day" }; o.onClick = (e, els) => { if (els.length) showActuals(ys[els[0].index].y); }; o.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; }; return o; })()
-  });
-  const ym = byYearMonth(rs), m = Array.from({ length: 12 }, () => ({ x: 0, n: 0, mn: 0, r: 0, rn: 0 }));
-  for (const r of rs) { const a = m[r.m - 1]; a.x += r.tmax; a.mn += r.tmin; a.n++; }
-  for (const a of ym.values()) if (a.full) { m[a.m - 1].r += a.rain; m[a.m - 1].rn++; }
-  charts.month = new Chart($("#monthChart"), {
-    data: {
-      labels: MON,
-      datasets: [
-        { type: "line", label: "Avg high", data: m.map(a => a.n ? +(a.x / a.n).toFixed(1) : null), borderColor: hot, backgroundColor: vgrad(hot, .22, .02), fill: "+1", tension: .4, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6, yAxisID: "y" },
-        { type: "line", label: "Avg low", data: m.map(a => a.n ? +(a.mn / a.n).toFixed(1) : null), borderColor: cold, backgroundColor: cold, tension: .4, borderWidth: 2.5, pointRadius: 0, pointHoverRadius: 6, yAxisID: "y" },
-        { type: "bar", label: "Rainfall", data: m.map(a => a.rn ? Math.round(a.r / a.rn) : null), backgroundColor: vgrad(rain, .55, .08), hoverBackgroundColor: rgba(rain, .7), borderRadius: 8, borderSkipped: false, yAxisID: "y2" }
-      ]
-    },
-    options: (() => { const o = chartBase(); o.plugins.tooltip.callbacks = { label: c => ` ${c.dataset.label}: ${c.raw}${c.dataset.type === "bar" ? " mm" : " °C"}`, footer: () => "Tap to see this month in every year" }; o.onClick = (e, els) => { if (els.length) showActuals(null, els[0].index + 1); }; o.onHover = (e, els) => { e.native.target.style.cursor = els.length ? "pointer" : "default"; }; return o; })()
-  });
-}
 
-function renderHeatmap(rs, key = hmKey, grid = "#heatmap", legend = "#hmLegend") {
-  const ym = byYearMonth(rs), yrs = [...new Set(rs.map(r => r.y))].sort((a, b) => b - a);
-  const isRain = key === "rain" || key === "xwet";
-  const vals = [...ym.values()].filter(a => key !== "rain" || a.full).map(a => a[key]);
-  const lo = Math.min(...vals), hi = Math.max(...vals), dark = isDark();
-  const color = v => {
-    const t = Math.max(0, Math.min(1, hi === lo ? .5 : (v - lo) / (hi - lo)));
-    if (isRain) { const s = Math.sqrt(t); return { bg: `hsl(${185 - s * 15} ${40 + s * 45}% ${dark ? 16 + s * 32 : 95 - s * 60}%)`, fg: dark || s > .55 ? "#fff" : "#0f1726" }; }
-    const hue = 222 - t * 216, l = dark ? 34 + Math.sin(t * Math.PI) * 14 : 56 + Math.sin(t * Math.PI) * 16;
-    return { bg: `hsl(${hue} 78% ${l}%)`, fg: dark ? "#fff" : (t > .22 && t < .82 ? "#0f1726" : "#fff") };
-  };
-  let h = `<div></div>` + MON.map(m => `<div class="h">${m}</div>`).join(""), i = 0;
-  for (const y of yrs) {
-    h += `<div class="y">${y}</div>`;
-    for (let m = 1; m <= 12; m++) {
-      const a = ym.get(y * 100 + m);
-      if (!a) { h += `<div></div>`; continue; }
-      const v = a[key], c = color(v), txt = isRain ? (key === "xwet" ? f1(v) : Math.round(v)) : v.toFixed(1);
-      const day = isRain ? a.wetD : (key === "tmin" || key === "xmin") ? a.loD : a.hiD;
-      const what = { tmax: "average high", tmin: "average low", xmax: `hottest day, ${fmtDate(day.date)}`, xmin: `coldest night, ${fmtDate(day.date)}`, xwet: `wettest day, ${fmtDate(day.date)}`, rain: "total rain" }[key];
-      h += `<button type="button" class="c" data-d="${day.date}" data-y="${y}" data-m="${m}" style="background:${c.bg};color:${c.fg};--d:${(i++ % 60) * 8}ms" title="${MON[m - 1]} ${y} · ${what}: ${txt} ${isRain ? "mm" : "°C"}${a.full ? "" : " (partial month)"} · tap to see every day">${txt}</button>`;
-    }
-  }
-  $(grid).innerHTML = h;
-  $$(grid + " .c").forEach(b => b.onclick = () => showActuals(+b.dataset.y, +b.dataset.m));
-  const unit = isRain ? "mm" : "°C", fmt = v => isRain ? Math.round(v) : v.toFixed(1);
-  $(legend).innerHTML = `<span class="num">${fmt(lo)} ${unit}</span><span class="bar" style="background:linear-gradient(90deg,${[0, .25, .5, .75, 1].map(t => color(lo + t * (hi - lo)).bg).join(",")})"></span><span class="num">${fmt(hi)} ${unit}</span>`;
-}
 
-function renderTable(ys) {
-  const maxR = Math.max(...ys.map(y => y.rain));
-  $("#yearTable").innerHTML = `<thead><tr><th>Year</th><th>Avg high</th><th>Avg low</th><th>Highest</th><th>Lowest</th><th>Rainfall</th><th>Rainy days</th><th>40 °C+ days</th></tr></thead><tbody>` +
-    [...ys].reverse().map(y => `<tr data-y="${y.y}" title="Tap to see ${y.y} day by day"><td>${y.y}${y.partial ? '<span class="tag">so far</span>' : ""}</td><td>${f1(y.avgMax)}°</td><td>${f1(y.avgMin)}°</td>
-      <td class="dl" data-d="${y.hi.date}" title="${fmtDate(y.hi.date)} · tap to open" style="color:var(--hot)">${f1(y.hi.tmax)}°</td><td class="dl" data-d="${y.lo.date}" title="${fmtDate(y.lo.date)} · tap to open" style="color:var(--cold)">${f1(y.lo.tmin)}°</td>
-      <td>${f0(y.rain)} mm<span class="rb" style="width:${Math.max(3, y.rain / maxR * 56)}px"></span></td><td>${y.rainy}</td><td>${y.hot}</td></tr>`).join("") + "</tbody>";
-}
 
 
 /* ================= daily actuals ================= */
-let axY = "all", axM = "all", axSpan = null;
+let axY = String(END_Y), axM = "all", axSpan = 365;
 function axRows() {
   if (axSpan) { const from = addDays(rows[rows.length - 1].date, -axSpan + 1); return rows.filter(r => r.date >= from); }
-  return rows.filter(r => (axY === "all" || r.y === +axY) && (axM === "all" || r.m === +axM));
+  return rows.filter(r => r.y === +axY && (axM === "all" || r.m === +axM));
 }
 function syncAxSelects() {
-  const yrs = [...new Set(rows.map(r => r.y))].sort((a, b) => b - a);
-  if (axY !== "all" && !yrs.includes(+axY)) axY = "all";
-  $("#axYear").innerHTML = `<option value="all">All years</option>` + yrs.map(y => `<option value="${y}">${y}</option>`).join("");
+  const yrs = Array.from({ length: END_Y - OLDEST_Y + 1 }, (_, k) => END_Y - k);
+  $("#axFrom").textContent = OLDEST_Y;
+  $("#axYear").innerHTML = (axSpan ? `<option value="span">${axSpan === 30 ? "Last 30 days" : "Last 12 months"}</option>` : "") + yrs.map(y => `<option value="${y}">${y}</option>`).join("");
   $("#axMonth").innerHTML = `<option value="all">All months</option>` + MON.map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
-  $("#axYear").value = axSpan ? "all" : axY; $("#axMonth").value = axSpan ? "all" : axM;
-  const stepOK = !axSpan && axY !== "all";
-  const unit = axM === "all" ? "year" : "month";
+  $("#axYear").value = axSpan ? "span" : axY; $("#axMonth").value = axSpan ? "all" : axM;
+  const stepOK = !axSpan, unit = axM === "all" ? "year" : "month";
   $("#axPrev").hidden = $("#axNext").hidden = !stepOK;
   if (stepOK) {
-    const yrs = [...new Set(rows.map(r => r.y))], y = +axY, m = axM === "all" ? 0 : +axM;
-    const firstYM = rows[0].y * 100 + rows[0].m, lastYM = rows[rows.length - 1].y * 100 + rows[rows.length - 1].m;
-    const atStart = unit === "year" ? y <= Math.min(...yrs) : y * 100 + m <= firstYM;
-    const atEnd = unit === "year" ? y >= Math.max(...yrs) : y * 100 + m >= lastYM;
+    const y = +axY, m = axM === "all" ? 0 : +axM, last = rows[rows.length - 1];
     $("#axPrev").querySelector("span").textContent = `Previous ${unit}`; $("#axNext").querySelector("span").textContent = `Next ${unit}`;
-    $("#axPrev").disabled = atStart; $("#axNext").disabled = atEnd;
+    $("#axPrev").disabled = unit === "year" ? y <= OLDEST_Y : y * 100 + m <= OLDEST_Y * 100 + 1;
+    $("#axNext").disabled = unit === "year" ? y >= END_Y : y * 100 + m >= last.y * 100 + last.m;
   }
-  $$(".ax-quick .chip").forEach(c => c.style.cssText = (c.dataset.ax === String(axSpan ?? (axY === "all" && axM === "all" ? "all" : ""))) ? "background:var(--ink);color:var(--bg)" : "");
+  $$(".ax-quick .chip").forEach(c => c.style.cssText = +c.dataset.ax === axSpan ? "background:var(--ink);color:var(--bg)" : "");
+}
+async function showYear() {
+  if (!axSpan && !rows.some(r => r.y === +axY)) await loadYear(+axY);
+  renderActuals();
+}
+async function loadYear(y) {
+  const p = place, tok = loadToken;
+  syncAxSelects();
+  charts.ax?.destroy(); charts.axR?.destroy(); $("#axCap").textContent = "";
+  $("#axSum").innerHTML = `<div style="grid-column:1/-1"><span>Loading ${y}</span><small>Fetching that year's daily readings…</small></div>`;
+  try {
+    const r = await ensureArchive(p, y, sec => withCountdown(sec, tok), () => {}, y);
+    if (p !== place) return;
+    rows = withRecent(r, await recentDays(p));
+    $("#status").hidden = true;
+  } catch (e) {
+    if (p !== place) return;
+    $("#status").hidden = true;
+    $("#axSum").innerHTML = `<div style="grid-column:1/-1"><span>Couldn't load ${y}</span><small>${e instanceof RateLimited ? "Open-Meteo's free limit for your network is used up for now. Try again in a while." : "Check your connection and try again."}</small></div>`;
+    throw e;
+  }
 }
 function axStep(dir) {
-  const yrs = [...new Set(rows.map(r => r.y))].sort((a, b) => a - b);
   let y = +axY, m = axM === "all" ? null : +axM;
   if (m == null) y += dir; else { m += dir; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } }
-  if (y < yrs[0] || y > yrs.at(-1)) return;
+  if (y < OLDEST_Y || y > END_Y) return;
   axY = String(y); if (m != null) axM = String(m);
-  renderActuals();
+  showYear().catch(() => {});
 }
-$("#axYear").addEventListener("change", e => { axSpan = null; axY = e.target.value; renderActuals(); });
-$("#axMonth").addEventListener("change", e => { axSpan = null; axM = e.target.value; if (axM !== "all" && axY === "all") axY = String(END_Y); renderActuals(); });
+$("#axYear").addEventListener("change", e => {
+  if (e.target.value === "span") return;
+  axSpan = null; axY = e.target.value; showYear().catch(() => {});
+});
+$("#axMonth").addEventListener("change", e => {
+  if (axSpan) { axSpan = null; axY = String(END_Y); }
+  axM = e.target.value; showYear().catch(() => {});
+});
 $("#axPrev").addEventListener("click", () => axStep(-1));
 $("#axNext").addEventListener("click", () => axStep(1));
-$$(".ax-quick .chip").forEach(c => c.addEventListener("click", () => {
-  if (c.dataset.ax === "all") { axSpan = null; axY = "all"; axM = "all"; } else axSpan = +c.dataset.ax;
-  renderActuals();
-}));
+$$(".ax-quick .chip").forEach(c => c.addEventListener("click", () => { axSpan = +c.dataset.ax; axM = "all"; renderActuals(); }));
 
 function renderActuals() {
   if (!rows.length) return;
   syncAxSelects();
   const rs = axRows();
+  $("#axCap").textContent = "";
   charts.ax?.destroy(); charts.axR?.destroy();
   if (!rs.length) { $("#axSum").innerHTML = `<div><span>No data</span><small>Nothing recorded for this selection. Try another year or month.</small></div>`; return; }
   let hi = rs[0], lo = rs[0], wet = rs[0], tot = 0, rainy = 0;
   for (const r of rs) { if (r.tmax > hi.tmax) hi = r; if (r.tmin < lo.tmin) lo = r; if (r.rain > wet.rain) wet = r; tot += r.rain; if (r.rain >= 2.5) rainy++; }
-  const label = axSpan ? `Last ${axSpan === 30 ? "30 days" : "12 months"}` : `${axM === "all" ? "" : MON[axM - 1] + " "}${axY === "all" ? (axM === "all" ? "All years" : "every year") : axY}`;
   $("#axSum").innerHTML = `
     <div><span>Highest</span><b style="color:var(--hot)">${f1(hi.tmax)}°</b><small>${fmtDate(hi.date)}</small></div>
     <div><span>Lowest</span><b style="color:var(--cold)">${f1(lo.tmin)}°</b><small>${fmtDate(lo.date)}</small></div>
     <div><span>Wettest day</span><b style="color:var(--rain)">${f1(wet.rain)} mm</b><small>${wet.rain > 0 ? fmtDate(wet.date) : "no rain"}</small></div>
-    <div><span>Total rain</span><b>${tot < 10 ? f1(tot) : f0(tot)} mm</b><small>${rainy} rainy days · ${label}</small></div>`;
-  const nRec = rs.filter(r => r.recent).length;
+    <div><span>Total rain</span><b>${tot < 10 ? f1(tot) : f0(tot)} mm</b><small>${rainy} rainy days</small></div>`;
+  const nRec = rs.filter(r => r.recent).length; void 0;
   $("#axCap").textContent = `${rs.length.toLocaleString("en-IN")} days shown, ${fmtDate(rs[0].date)} to ${fmtDate(rs.at(-1).date)}. Larger dots mark the highest and lowest reading.${nRec ? ` The last ${nRec} day${nRec > 1 ? "s" : ""} (dashed) come from the latest weather analysis and can shift slightly once the full archive catches up, usually within 5 days.` : ""}`;
   const n = rs.length, many = n > 400, hot = css("--hot"), cold = css("--cold"), rain = css("--rain"), ink = css("--ink");
   const iHi = rs.indexOf(hi), iLo = rs.indexOf(lo);
@@ -1478,10 +1255,9 @@ function renderActuals() {
     label: c => ` ${c.dataset.label}: ${f1(c.raw)} °C`
   };
   o.scales.x.ticks = { color: css("--muted"), autoSkip: true, maxTicksLimit: window.innerWidth < 600 ? 5 : 10, maxRotation: 0,
-    callback: (v, i) => { const d = rs[i]?.date; if (!d) return ""; const [y, m, dd] = d.split("-"); return n > 400 || (!axSpan && axY === "all" && axM !== "all") ? `${MON[+m - 1]} ${y}` : `${+dd} ${MON[+m - 1]}`; } };
+    callback: (v, i) => { const d = rs[i]?.date; if (!d) return ""; const [y, m, dd] = d.split("-"); return n > 400 ? `${MON[+m - 1]} ${y}` : `${+dd} ${MON[+m - 1]}`; } };
   o.scales.y.grace = "8%";
-  o.onClick = (e, els) => { if (!els.length) return; const r = rs[els[0].index]; $("#dayPick").value = r.date; renderDay(); };
-  charts.ax = new Chart($("#axChart"), {
+    charts.ax = new Chart($("#axChart"), {
     data: {
       labels: rs.map(r => r.date),
       datasets: [
@@ -1503,7 +1279,6 @@ function renderActuals() {
   ro.animation = o.animation;
   ro.scales.x = { ...o.scales.x, ticks: { ...o.scales.x.ticks } };
   ro.plugins.tooltip.callbacks = { title: it => fmtDate(rs[it[0].dataIndex].date), label: c => ` Rain: ${f1(c.raw)} mm` };
-  ro.onClick = o.onClick;
   const iWet = rs.indexOf(wet);
   charts.axR = new Chart($("#axRain"), {
     type: "bar",
@@ -1513,47 +1288,6 @@ function renderActuals() {
   });
 }
 
-/* ================= date explorer ================= */
-function initDay() {
-  const inp = $("#dayPick"); inp.min = rows[0].date; inp.max = rows[rows.length - 1].date;
-  if (!inp.value || inp.value > END || inp.value < inp.min) inp.value = lastYearToday();
-  renderDay();
-}
-const lastYearToday = () => { let md = TODAY.slice(5); if (md === "02-29") md = "02-28"; const v = `${CUR_Y - 1}-${md}`; return v <= END ? v : END; };
-$("#dayPick").addEventListener("change", renderDay);
-$$(".dx-pick .chip").forEach(c => c.addEventListener("click", () => {
-  const q = c.dataset.q; $("#dayPick").value = q === "lastyear" ? lastYearToday() : q === "hottest" ? stat.hi.date : stat.wet.date; renderDay();
-}));
-function renderDay() {
-  const v = $("#dayPick").value; if (!v || !rows.length) return;
-  const r = rows.find(x => x.date === v), nm = normalFor(v.slice(5));
-  if (!r) { $("#dayBig").innerHTML = ""; $("#dayExtra").textContent = `Pick a date between ${fmtDate(rows[0].date)} and ${fmtDate(END)}. Switch to 15 years to go further back.`; }
-  else {
-    $("#dayBig").innerHTML = `<div><span>High</span><b style="color:var(--hot)">${f1(r.tmax)}°</b></div><div><span>Low</span><b style="color:var(--cold)">${f1(r.tmin)}°</b></div><div><span>Rain</span><b style="color:var(--rain)">${f1(r.rain)}<small style="font-size:.5em"> mm</small></b></div>`;
-    const dv = nm ? r.tmax - nm.tmax : null;
-    $("#dayExtra").innerHTML = [fmtDate(v), r.rh != null ? `${f0(r.rh)}% humidity` : "", `wind up to ${f0(r.wind)} km/h`,
-      dv != null ? `high was <b style="color:${dv >= 0 ? "var(--hot)" : "var(--cold)"}">${Math.abs(dv).toFixed(1)}° ${dv >= 0 ? "above" : "below"}</b> normal` : ""].filter(Boolean).join(" · ");
-  }
-  const md = v.slice(5), same = rows.filter(x => x.md === md).sort((a, b) => b.y - a.y);
-  if (!same.length) { $("#sameBars").innerHTML = ""; return; }
-  const lo = Math.min(...same.map(x => x.tmin)) - 1, hi = Math.max(...same.map(x => x.tmax)) + 1, span = hi - lo;
-  $("#sameTitle").textContent = `${fmtDate(v).replace(/ \d{4}$/, "")} across ${same.length} years · low → high`;
-  $("#sameBars").innerHTML = same.map(x => `<div class="bar-row${x.date === v ? " on" : ""}" data-d="${x.date}" role="button" tabindex="0" aria-label="${x.y}: low ${f1(x.tmin)}, high ${f1(x.tmax)}, rain ${f1(x.rain)} mm">
-      <span class="y">${x.y}</span>
-      <span class="bar-track"><span class="bar-fill" style="left:${(x.tmin - lo) / span * 100}%;right:${100 - (x.tmax - lo) / span * 100}%;--bw:${100 / ((x.tmax - x.tmin) / span || 1)}%" title="${f1(x.tmin)}° → ${f1(x.tmax)}°"></span></span>
-      <span class="r">${x.rain >= .1 ? f1(x.rain) + " mm" : "dry"}</span></div>`).join("");
-  $$("#sameBars .bar-row").forEach(b => { const go = () => { $("#dayPick").value = b.dataset.d; renderDay(); }; b.onclick = go; b.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; });
-}
-
-/* ================= CSV ================= */
-$("#csvBtn").addEventListener("click", () => {
-  const rs = currentRows();
-  const csv = ["date,max_temp_c,min_temp_c,mean_temp_c,rain_mm,humidity_pct,max_wind_kmh"].concat(rs.map(r => [r.date, r.tmax, r.tmin, r.tmean, r.rain, r.rh ?? "", r.wind].join(","))).join("\n");
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = `${place.name.replace(/\W+/g, "_")}_weather_${firstYear()}-${END_Y}.csv`;
-  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
-});
 
 /* ================= forecast ================= */
 const WMO = { 0:"Clear sky",1:"Mostly clear",2:"Partly cloudy",3:"Overcast",45:"Fog",48:"Freezing fog",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",56:"Freezing drizzle",57:"Freezing drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",66:"Freezing rain",67:"Freezing rain",71:"Light snow",73:"Snow",75:"Heavy snow",77:"Snow grains",80:"Light showers",81:"Showers",82:"Heavy showers",85:"Snow showers",86:"Heavy snow showers",95:"Thunderstorm",96:"Thunderstorm with hail",99:"Severe thunderstorm" };
@@ -1603,7 +1337,7 @@ async function fromWttr() {
   };
 }
 async function loadForecast() {
-  fcData = null; fcErr = ""; fcLoading = true; $("#forecast").innerHTML = `<p class="muted" style="grid-column:1/-1">Loading forecast…</p>`; $("#nowNorm").hidden = true;
+  fcData = null; fcErr = ""; fcLoading = true; $("#forecast").innerHTML = `<p class="muted" style="grid-column:1/-1">Loading forecast…</p>`;
   $("#nowT").innerHTML = `–<sup>°C</sup>`; $("#nowC").textContent = "Loading current weather"; $("#nowS").textContent = "";
   const om = `https://api.open-meteo.com/v1/forecast?latitude=${(+place.lat).toFixed(4)}&longitude=${(+place.lon).toFixed(4)}&timezone=${encodeURIComponent(TZ)}&forecast_days=7`;
   const tries = [
@@ -1653,28 +1387,18 @@ async function loadModels(om, myPlace) {
     renderForecast();
   } catch (e) { console.warn("models", e.message); }
 }
-function renderNowNorm() {
-  if (!fcData?.daily || !rows.length) return;
-  const n = normalFor(TODAY.slice(5)); if (!n) return;
-  const hi = fcData.daily.temperature_2m_max[0], d = hi - n.tmax;
-  $("#nowNorm").hidden = false;
-  $("#nowNorm").innerHTML = `Today's high of <b>${Math.round(hi)}°</b> is <b style="color:${d >= 0 ? "var(--hot)" : "var(--cold)"}">${Math.abs(d).toFixed(1)}° ${d >= 0 ? "above" : "below"}</b> the ${normYears()}-year normal of ${f1(n.tmax)}° for this week.`;
-}
+function renderNowNorm() {}
 function renderForecast() {
   const d = fcData?.daily;
   if (!d && fcLoading) return;
   if (!d) { $("#forecast").innerHTML = `<div class="muted" style="grid-column:1/-1;display:flex;flex-wrap:wrap;gap:10px;align-items:center">The forecast couldn't load. <button class="chip" type="button" id="retryFc">Try again</button><small style="width:100%;color:var(--faint)">${esc(fcErr)}</small></div>`; const b = $("#retryFc"); if (b) b.onclick = () => loadForecast(); return; }
-  $("#fcNote").textContent = `Each day's forecast high compared with the ${normYears()}-year average for that time of year. Tap a day for its hourly forecast. Forecast from ${fcSource}${d.time.length < 7 ? ` (${d.time.length} days available)` : ""}.${fcModels ? ` The range under each day shows how far ${fcModels.used.length} forecast models (${fcModels.used.join(", ")}) disagree. Other weather sites use one of these or their own model.` : ""}`;
+  $("#fcNote").textContent = `Tap a day for its hour-by-hour forecast. Forecast from ${fcSource}${d.time.length < 7 ? ` (${d.time.length} days available)` : ""}.`;
   $("#forecast").innerHTML = d.time.map((t, i) => {
-    const n = rows.length ? normalFor(t.slice(5)) : null, dv = n ? d.temperature_2m_max[i] - n.tmax : null;
-    const cls = dv == null ? "" : Math.abs(dv) < 1 ? "flat" : dv > 0 ? "up" : "down";
     const dn = i === 0 ? "Today" : new Date(t + "T12:00:00").toLocaleDateString("en-IN", { weekday: "short", day: "numeric" });
     const pp = d.precipitation_probability_max?.[i];
     return `<div class="fd" role="button" tabindex="0" data-i="${i}" aria-label="Hourly details for ${dn}"><span class="dn">${dn}</span>${icon(d.weather_code[i])}<span class="w">${WMO[d.weather_code[i]] || ""}</span>
       <span class="tt"><b>${Math.round(d.temperature_2m_max[i])}°</b> / <em>${Math.round(d.temperature_2m_min[i])}°</em></span>
-      ${dv != null ? `<span class="delta ${cls}">${cls === "flat" ? "≈ normal" : (dv > 0 ? "+" : "−") + Math.abs(dv).toFixed(1) + "° vs normal"}</span>` : ""}
-      <span class="r">${f1(d.precipitation_sum[i])} mm${pp != null ? ` · ${pp}% chance` : ""}</span>
-      ${fcModels?.lo[i] ? `<span class="spread" title="Range across ${fcModels.used.join(", ")}"><span class="sl">Models range</span>↑ ${Math.round(fcModels.hi[i][0])} to ${Math.round(fcModels.hi[i][1])}°<br>↓ ${Math.round(fcModels.lo[i][0])} to ${Math.round(fcModels.lo[i][1])}°</span>` : ""}<span class="more">Hourly ›</span></div>`;
+      <span class="r">${f1(d.precipitation_sum[i])} mm${pp != null ? ` · ${pp}% chance` : ""}</span><span class="more">Hourly ›</span></div>`;
   }).join("");
   $$("#forecast .fd").forEach(c => { const go = () => openDay(+c.dataset.i); c.onclick = go; c.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); go(); } }; });
 }
@@ -1690,22 +1414,7 @@ function showActuals(y, m) {
   axSpan = null; axY = y == null ? "all" : String(y); axM = m == null ? "all" : String(m);
   renderActuals(); goSection("#actuals");
 }
-function showDay(date) {
-  if (!date) return;
-  $("#dayPick").value = date; renderDay(); goSection("#lookup");
-}
 const activate = (el, fn) => { el.addEventListener("click", fn); el.addEventListener("keydown", e => { if ((e.key === "Enter" || e.key === " ") && e.target === el) { e.preventDefault(); fn(e); } }); };
-function runGo(go) {
-  const [kind, v] = go.split(":");
-  if (kind === "day") showDay(stat[v]?.date);
-  else if (kind === "sec") goSection(v);
-  else if (kind === "y") showActuals(+v);
-}
-$$(".stat[data-go]").forEach(c => activate(c, e => { const tr = e.target.closest(".tr[data-d]"); if (tr) showDay(tr.dataset.d); else runGo(c.dataset.go); }));
-$("#insights").addEventListener("click", e => { const y = e.target.closest(".yr"); if (y) { showActuals(+y.dataset.y); return; } const c = e.target.closest(".ins[data-go]"); if (c) runGo(c.dataset.go); });
-$("#insights").addEventListener("keydown", e => { const c = e.target.closest(".ins[data-go]"); if (c && (e.key === "Enter" || e.key === " ") && e.target === c) { e.preventDefault(); runGo(c.dataset.go); } });
-$("#stripeRead").addEventListener("click", e => { const b = e.target.closest("[data-y]"); if (b) showActuals(+b.dataset.y); });
-$("#yearTable").addEventListener("click", e => { const td = e.target.closest("td[data-d]"); if (td) { showDay(td.dataset.d); return; } const tr = e.target.closest("tr[data-y]"); if (tr) showActuals(+tr.dataset.y); });
 activate($("#nowCard"), () => openDay(0));
 
 /* ================= day detail: hourly forecast ================= */
@@ -1762,7 +1471,7 @@ function renderDaySummary() {
   $("#ddTitle").textContent = (i === 0 ? "Today, " : i === 1 ? "Tomorrow, " : "") + dn;
   $("#ddSub").textContent = `${place.name}${place.admin ? " · " + place.admin : ""}`;
   $("#ddPrev").disabled = i === 0; $("#ddNext").disabled = i === d.time.length - 1;
-  const n = rows.length ? normalFor(t.slice(5)) : null, dv = n ? d.temperature_2m_max[i] - n.tmax : null;
+  const n = null, dv = null;
   const tx = d.temperature_2m_max[i], tn = d.temperature_2m_min[i];
   // hero
   const heroTemp = isToday && nowK >= 0 ? Math.round(H.temperature_2m[nowK]) : Math.round(tx);
@@ -1817,16 +1526,6 @@ function renderDaySummary() {
       <div class="c">Highs ${Math.round(h1)}–${Math.round(h2)}° · Lows ${Math.round(l1)}–${Math.round(l2)}°<br>across ${fcModels.used.length} models (${fcModels.used.join(", ")})</div>`));
   }
   $("#ddTiles").innerHTML = T.join("");
-  // same calendar date in past years
-  const md = t.slice(5), same = rows.filter(x => x.md === md).sort((a, b) => b.y - a.y);
-  $("#ddPastT").textContent = same.length ? `${new Date(t + "T12:00:00").toLocaleDateString("en-IN", { day: "numeric", month: "short" })} in past years · actual low → high` : "";
-  if (same.length) {
-    const lo = Math.min(...same.map(x => x.tmin), tn) - 1, hi2 = Math.max(...same.map(x => x.tmax), tx) + 1, sp = hi2 - lo;
-    const row = (lab, a, b, rain, date, cls = "") => `<div class="bar-row ${cls}"${date ? ` data-d="${date}" role="button" tabindex="0" title="Open ${fmtDate(date)}"` : ""}><span class="y">${lab}</span><span class="bar-track"><span class="bar-fill" style="left:${(a - lo) / sp * 100}%;right:${100 - (b - lo) / sp * 100}%"></span></span><span class="r">${rain}</span></div>`;
-    $("#ddPast").innerHTML = row(i === 0 ? "Today" : "Fcst", tn, tx, f1(d.precipitation_sum[i]) + " mm", null, "on") +
-      same.map(x => row(x.y, x.tmin, x.tmax, x.rain >= .1 ? f1(x.rain) + " mm" : "dry", x.date)).join("");
-    $$("#ddPast .bar-row[data-d]").forEach(b => activate(b, () => { closeDay(); showDay(b.dataset.d); }));
-  } else $("#ddPast").innerHTML = `<div class="dd-msg">History for this place is still loading.</div>`;
 }
 function renderHours() {
   const H = hourly.hourly, day = fcData.daily.time[ddIdx];
